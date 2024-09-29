@@ -2,19 +2,35 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("ncurses.h");
     @cInclude("menu.h");
+    @cInclude("locale.h");
 });
 
 pub fn main() !void {
+    _ = c.setlocale(c.LC_ALL, "");
     _ = c.initscr();
     _ = c.noecho();
     _ = c.keypad(c.stdscr, true);
+    _ = c.printw(
+        \\    ████████╗███████╗██████╗ ███╗   ███╗
+        \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
+        \\       ██║   █████╗  ██████╔╝██╔████╔██║
+        \\       ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+        \\       ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+        \\       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+        \\████████╗███████╗████████╗██████╗ ██╗███████╗
+        \\╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝
+        \\   ██║   █████╗     ██║   ██████╔╝██║███████╗
+        \\   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║
+        \\   ██║   ███████╗   ██║   ██║  ██║██║███████║
+        \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
+    );
     const choices = &[_][*c]const u8{ "Play", "Help", "Quit" };
     var items: []?*c.ITEM = try std.heap.page_allocator.alloc(?*c.ITEM, choices.len);
     for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
-    const win = c.newwin(10, 30, 0, 0);
+    const win = c.newwin(choices.len + 2, 8, 12, 19);
     _ = c.set_menu_win(menu, win);
-    _ = c.set_menu_sub(menu, c.derwin(win, 6, 24, 1, 5));
+    _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
     _ = c.refresh();
     _ = c.post_menu(menu);
     var run = true;
