@@ -10,20 +10,6 @@ pub fn main() !void {
     _ = c.initscr();
     _ = c.noecho();
     _ = c.keypad(c.stdscr, true);
-    _ = c.printw(
-        \\    ████████╗███████╗██████╗ ███╗   ███╗
-        \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
-        \\       ██║   █████╗  ██████╔╝██╔████╔██║
-        \\       ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
-        \\       ██║   ███████╗██║  ██║██║ ╚═╝ ██║
-        \\       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
-        \\████████╗███████╗████████╗██████╗ ██╗███████╗
-        \\╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝
-        \\   ██║   █████╗     ██║   ██████╔╝██║███████╗
-        \\   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║
-        \\   ██║   ███████╗   ██║   ██║  ██║██║███████║
-        \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
-    );
     const choices = &[_][*c]const u8{ "Play", "Help", "Quit" };
     var items: []?*c.ITEM = try std.heap.page_allocator.alloc(?*c.ITEM, choices.len);
     for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
@@ -31,11 +17,30 @@ pub fn main() !void {
     const win = c.newwin(choices.len + 2, 8, 12, 19);
     _ = c.set_menu_win(menu, win);
     _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
-    _ = c.refresh();
     _ = c.post_menu(menu);
     var run = true;
+    var refresh = true;
     var input: c_int = undefined;
     while (run) {
+        if (refresh) {
+            _ = c.mvprintw(0, 0,
+                \\    ████████╗███████╗██████╗ ███╗   ███╗
+                \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
+                \\       ██║   █████╗  ██████╔╝██╔████╔██║
+                \\       ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+                \\       ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+                \\       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+                \\████████╗███████╗████████╗██████╗ ██╗███████╗
+                \\╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝
+                \\   ██║   █████╗     ██║   ██████╔╝██║███████╗
+                \\   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║
+                \\   ██║   ███████╗   ██║   ██║  ██║██║███████║
+                \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
+            );
+            _ = c.refresh();
+            _ = c.set_current_item(menu, items[0]);
+            refresh = false;
+        }
         _ = c.wrefresh(win);
         input = c.getch();
         switch (input) {
@@ -43,7 +48,7 @@ pub fn main() !void {
             10 => {
                 switch (c.item_index(c.current_item(menu).?)) {
                     0 => _ = c.mvprintw(c.LINES - 1, 0, "Play"),
-                    1 => _ = c.mvprintw(c.LINES - 1, 0, "Help"),
+                    1 => refresh = help(),
                     2 => run = false,
                     else => {},
                 }
@@ -57,4 +62,29 @@ pub fn main() !void {
     _ = c.free_menu(menu);
     for (items) |item| _ = c.free_item(item);
     _ = c.endwin();
+}
+
+fn help() bool {
+    _ = c.clear();
+    _ = c.mvprintw(0, 0,
+        \\# Help
+        \\
+        \\## Menu
+        \\
+        \\Esc: Go back
+        \\Enter: Select an option
+        \\j/k or arrow keys: Move up/down
+        \\
+        \\## Gameplay
+        \\
+        \\Left/Right keys: Move shape
+        \\Up Arrow: Rotate shape
+        \\Down Arrow: Soft drop shape
+        \\Space: Hard drop shape
+        \\c: Capture shape
+        \\p: Pause
+    );
+    while (c.getch() != 27) {}
+    _ = c.clear();
+    return true;
 }
