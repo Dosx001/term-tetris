@@ -5,51 +5,68 @@ const c = @cImport({
     @cInclude("locale.h");
 });
 
+const Display = enum {
+    exit,
+    help,
+    play,
+    start,
+};
+
 pub fn main() !void {
     _ = c.setlocale(c.LC_ALL, "");
     _ = c.initscr();
     _ = c.noecho();
     _ = c.keypad(c.stdscr, true);
+    var state = Display.start;
+    while (true) {
+        state = switch (state) {
+            Display.help => help(),
+            Display.play => play(),
+            Display.exit => break,
+            Display.start => start(),
+        };
+        _ = c.clear();
+    }
+    _ = c.endwin();
+}
+
+fn start() Display {
+    _ = c.mvprintw(0, 0,
+        \\    ████████╗███████╗██████╗ ███╗   ███╗
+        \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
+        \\       ██║   █████╗  ██████╔╝██╔████╔██║
+        \\       ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
+        \\       ██║   ███████╗██║  ██║██║ ╚═╝ ██║
+        \\       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+        \\████████╗███████╗████████╗██████╗ ██╗███████╗
+        \\╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝
+        \\   ██║   █████╗     ██║   ██████╔╝██║███████╗
+        \\   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║
+        \\   ██║   ███████╗   ██║   ██║  ██║██║███████║
+        \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
+    );
     const choices = &[_][*c]const u8{ "Play", "Help", "Quit" };
-    var items: []?*c.ITEM = try std.heap.page_allocator.alloc(?*c.ITEM, choices.len);
+    var items: []?*c.ITEM = undefined;
+    if (std.heap.page_allocator.alloc(?*c.ITEM, choices.len)) |new_items| {
+        items = new_items;
+    } else |_| return Display.exit;
     for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
     const win = c.newwin(choices.len + 2, 8, 12, 19);
     _ = c.set_menu_win(menu, win);
     _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
     _ = c.post_menu(menu);
-    var run = true;
-    var refresh = true;
+    _ = c.refresh();
     var input: c_int = undefined;
-    while (run) {
-        if (refresh) {
-            _ = c.mvprintw(0, 0,
-                \\    ████████╗███████╗██████╗ ███╗   ███╗
-                \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
-                \\       ██║   █████╗  ██████╔╝██╔████╔██║
-                \\       ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║
-                \\       ██║   ███████╗██║  ██║██║ ╚═╝ ██║
-                \\       ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
-                \\████████╗███████╗████████╗██████╗ ██╗███████╗
-                \\╚══██╔══╝██╔════╝╚══██╔══╝██╔══██╗██║██╔════╝
-                \\   ██║   █████╗     ██║   ██████╔╝██║███████╗
-                \\   ██║   ██╔══╝     ██║   ██╔══██╗██║╚════██║
-                \\   ██║   ███████╗   ██║   ██║  ██║██║███████║
-                \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
-            );
-            _ = c.refresh();
-            _ = c.set_current_item(menu, items[0]);
-            refresh = false;
-        }
+    const state = while (true) {
         _ = c.wrefresh(win);
         input = c.getch();
         switch (input) {
-            113 => run = false,
             10 => {
                 switch (c.item_index(c.current_item(menu).?)) {
-                    0 => _ = c.mvprintw(c.LINES - 1, 0, "Play"),
-                    1 => refresh = help(),
-                    2 => run = false,
+                    0 => return Display.play,
+                    1 => return Display.help,
+                    2 => return Display.exit,
                     else => {},
                 }
             },
@@ -57,15 +74,22 @@ pub fn main() !void {
             107, c.KEY_UP => _ = c.menu_driver(menu, c.REQ_UP_ITEM),
             else => {},
         }
-    }
+    };
     _ = c.unpost_menu(menu);
     _ = c.free_menu(menu);
     for (items) |item| _ = c.free_item(item);
-    _ = c.endwin();
+    return state;
 }
 
-fn help() bool {
-    _ = c.clear();
+fn play() Display {
+    _ = c.mvprintw(0, 0,
+        \\Play
+    );
+    while (c.getch() != 27) {}
+    return Display.start;
+}
+
+fn help() Display {
     _ = c.mvprintw(0, 0,
         \\# Help
         \\
@@ -85,6 +109,5 @@ fn help() bool {
         \\p: Pause
     );
     while (c.getch() != 27) {}
-    _ = c.clear();
-    return true;
+    return Display.start;
 }
