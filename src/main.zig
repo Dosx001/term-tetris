@@ -51,7 +51,7 @@ fn start() Display {
     if (std.heap.page_allocator.alloc(?*c.ITEM, choices.len)) |new_items| {
         items = new_items;
     } else |_| return Display.exit;
-    for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
+    inline for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
     const win = c.newwin(choices.len + 2, 8, 12, 19);
     _ = c.set_menu_win(menu, win);
@@ -78,7 +78,7 @@ fn start() Display {
     };
     _ = c.unpost_menu(menu);
     _ = c.free_menu(menu);
-    for (items) |item| _ = c.free_item(item);
+    inline for (items) |item| _ = c.free_item(item);
     return state;
 }
 
