@@ -1,4 +1,5 @@
 const std = @import("std");
+const bag = @import("bag.zig");
 const c = @cImport({
     @cInclude("ncurses.h");
     @cInclude("menu.h");
@@ -129,7 +130,42 @@ fn play() Display {
     _ = c.wrefresh(hold);
     _ = c.wrefresh(next);
     _ = c.wrefresh(meta);
-    while (c.getch() != 27) {}
+    var input: c_int = undefined;
+    var bg = bag.Bag.init();
+    while (input != 27) {
+        input = c.getch();
+        _ = c.mvwprintw(next, 2, 4, "    ");
+        _ = c.mvwprintw(next, 3, 4, "   ");
+        switch (bg.grab()) {
+            .I => _ = c.mvwprintw(next, 2, 4, "####"),
+            .J => {
+                _ = c.mvwprintw(next, 2, 4, "#");
+                _ = c.mvwprintw(next, 3, 4, "###");
+            },
+            .L => _ = {
+                _ = c.mvwprintw(next, 2, 6, "#");
+                _ = c.mvwprintw(next, 3, 4, "###");
+            },
+            .O => {
+                _ = c.mvwprintw(next, 2, 4, "##");
+                _ = c.mvwprintw(next, 3, 4, "##");
+            },
+            .S => _ = {
+                _ = c.mvwprintw(next, 2, 5, "##");
+                _ = c.mvwprintw(next, 3, 4, "##");
+            },
+            .T => _ = {
+                _ = c.mvwprintw(next, 2, 5, "#");
+                _ = c.mvwprintw(next, 3, 4, "###");
+            },
+            .Z => _ = {
+                _ = c.mvwprintw(next, 2, 4, "##");
+                _ = c.mvwprintw(next, 3, 5, "##");
+            },
+        }
+        _ = c.box(next, 0, 0);
+        _ = c.wrefresh(next);
+    }
     return Display.start;
 }
 
