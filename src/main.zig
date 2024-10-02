@@ -17,6 +17,7 @@ pub fn main() !void {
     _ = c.initscr();
     _ = c.noecho();
     _ = c.keypad(c.stdscr, true);
+    _ = c.curs_set(0);
     c.ESCDELAY = 0;
     var state = Display.start;
     while (true) {
