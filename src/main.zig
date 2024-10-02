@@ -53,6 +53,7 @@ fn start() Display {
     if (std.heap.page_allocator.alloc(?*c.ITEM, choices.len)) |new_items| {
         items = new_items;
     } else |_| return Display.exit;
+    defer std.heap.page_allocator.free(items);
     inline for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
     const win = c.newwin(choices.len + 2, 8, 12, 19);
