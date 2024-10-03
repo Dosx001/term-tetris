@@ -18,13 +18,23 @@ pub const Next = struct {
     pub fn draw(self: *Next, shape: Shape) void {
         _ = c.mvwaddstr(self.win, 2, 4, "    ");
         _ = c.mvwaddstr(self.win, 3, 4, "   ");
+        const color = switch (shape) {
+            .I => c.COLOR_PAIR(5),
+            .J => c.COLOR_PAIR(6),
+            .L => c.COLOR_PAIR(2),
+            .O => c.COLOR_PAIR(3),
+            .S => c.COLOR_PAIR(4),
+            .T => c.COLOR_PAIR(7),
+            .Z => c.COLOR_PAIR(1),
+        };
+        _ = c.wattron(self.win, color);
         switch (shape) {
             .I => _ = c.mvwaddstr(self.win, 2, 4, "####"),
             .J => {
                 _ = c.mvwaddstr(self.win, 2, 4, "#");
                 _ = c.mvwaddstr(self.win, 3, 4, "###");
             },
-            .L => _ = {
+            .L => {
                 _ = c.mvwaddstr(self.win, 2, 6, "#");
                 _ = c.mvwaddstr(self.win, 3, 4, "###");
             },
@@ -32,19 +42,20 @@ pub const Next = struct {
                 _ = c.mvwaddstr(self.win, 2, 4, "##");
                 _ = c.mvwaddstr(self.win, 3, 4, "##");
             },
-            .S => _ = {
+            .S => {
                 _ = c.mvwaddstr(self.win, 2, 5, "##");
                 _ = c.mvwaddstr(self.win, 3, 4, "##");
             },
-            .T => _ = {
+            .T => {
                 _ = c.mvwaddstr(self.win, 2, 5, "#");
                 _ = c.mvwaddstr(self.win, 3, 4, "###");
             },
-            .Z => _ = {
+            .Z => {
                 _ = c.mvwaddstr(self.win, 2, 4, "##");
                 _ = c.mvwaddstr(self.win, 3, 5, "##");
             },
         }
+        _ = c.wattroff(self.win, color);
         _ = c.wrefresh(self.win);
     }
 };

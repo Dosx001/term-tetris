@@ -19,12 +19,21 @@ const Display = enum {
 };
 
 pub fn main() !void {
+    c.ESCDELAY = 0;
     _ = c.setlocale(c.LC_ALL, "");
     _ = c.initscr();
     _ = c.noecho();
-    _ = c.keypad(c.stdscr, true);
     _ = c.curs_set(0);
-    c.ESCDELAY = 0;
+    _ = c.keypad(c.stdscr, true);
+    _ = c.start_color();
+    _ = c.use_default_colors();
+    _ = c.init_pair(1, c.COLOR_RED, c.COLOR_RED);
+    _ = c.init_pair(2, 214, 214);
+    _ = c.init_pair(3, c.COLOR_YELLOW, c.COLOR_YELLOW);
+    _ = c.init_pair(4, c.COLOR_GREEN, c.COLOR_GREEN);
+    _ = c.init_pair(5, c.COLOR_CYAN, c.COLOR_CYAN);
+    _ = c.init_pair(6, c.COLOR_BLUE, c.COLOR_BLUE);
+    _ = c.init_pair(7, c.COLOR_MAGENTA, c.COLOR_MAGENTA);
     var state = Display.start;
     while (true) {
         state = switch (state) {
