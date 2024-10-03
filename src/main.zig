@@ -1,5 +1,10 @@
 const std = @import("std");
-const bag = @import("bag.zig");
+const Bag = @import("game/bag.zig");
+const Board = @import("game/board.zig");
+const Game = @import("game/next.zig");
+const Hold = @import("game/hold.zig");
+const Meta = @import("game/meta.zig");
+const Next = @import("game/next.zig");
 const c = @cImport({
     @cInclude("ncurses.h");
     @cInclude("menu.h");
@@ -86,86 +91,21 @@ fn start() Display {
 }
 
 fn play() Display {
-    const board = c.newwin(22, 21, 0, 12);
-    _ = c.wprintw(board,
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-        \\ #.#.#.#.#.#.#.#.#.#
-    );
-    _ = c.box(board, 0, 0);
-    const hold = c.newwin(5, 12, 0, 0);
-    _ = c.box(hold, 0, 0);
-    _ = c.mvwprintw(hold, 1, 1, "HOLD");
-    const next = c.newwin(5, 12, 5, 0);
-    _ = c.mvwprintw(next, 1, 1, "NEXT");
-    _ = c.box(next, 0, 0);
-    const meta = c.newwin(8, 12, 14, 0);
-    _ = c.mvwprintw(meta, 1, 1,
-        \\SCORE
-        \\ 2147483647
-        \\ LEVEL
-        \\
-        \\ LINES
-    );
-    _ = c.box(meta, 0, 0);
     _ = c.refresh();
-    _ = c.wrefresh(board);
-    _ = c.wrefresh(hold);
-    _ = c.wrefresh(next);
-    _ = c.wrefresh(meta);
     var input: c_int = undefined;
-    var bg = bag.Bag.init();
+    var bag = Bag.Bag.init();
+    const board = Board.Board.init();
+    _ = board;
+    const meta = Meta.Meta.init();
+    _ = meta;
+    const hold = Hold.Hold.init();
+    _ = hold;
+    var next = Next.Next.init();
+    var shape: Bag.Shape = undefined;
     while (input != 27) {
         input = c.getch();
-        _ = c.mvwprintw(next, 2, 4, "    ");
-        _ = c.mvwprintw(next, 3, 4, "   ");
-        switch (bg.grab()) {
-            .I => _ = c.mvwprintw(next, 2, 4, "####"),
-            .J => {
-                _ = c.mvwprintw(next, 2, 4, "#");
-                _ = c.mvwprintw(next, 3, 4, "###");
-            },
-            .L => _ = {
-                _ = c.mvwprintw(next, 2, 6, "#");
-                _ = c.mvwprintw(next, 3, 4, "###");
-            },
-            .O => {
-                _ = c.mvwprintw(next, 2, 4, "##");
-                _ = c.mvwprintw(next, 3, 4, "##");
-            },
-            .S => _ = {
-                _ = c.mvwprintw(next, 2, 5, "##");
-                _ = c.mvwprintw(next, 3, 4, "##");
-            },
-            .T => _ = {
-                _ = c.mvwprintw(next, 2, 5, "#");
-                _ = c.mvwprintw(next, 3, 4, "###");
-            },
-            .Z => _ = {
-                _ = c.mvwprintw(next, 2, 4, "##");
-                _ = c.mvwprintw(next, 3, 5, "##");
-            },
-        }
-        _ = c.box(next, 0, 0);
-        _ = c.wrefresh(next);
+        shape = bag.grab();
+        next.draw(shape);
     }
     return Display.start;
 }

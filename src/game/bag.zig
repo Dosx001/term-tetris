@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const Shape = enum {
+pub const Shape = enum {
     I,
     J,
     L,
