@@ -86,27 +86,29 @@ fn start() Display {
     };
     _ = c.unpost_menu(menu);
     _ = c.free_menu(menu);
+    _ = c.delwin(win);
     inline for (items) |item| _ = c.free_item(item);
     return state;
 }
 
 fn play() Display {
     _ = c.refresh();
-    var input: c_int = undefined;
     var bag = Bag.Bag.init();
-    const board = Board.Board.init();
-    _ = board;
-    const meta = Meta.Meta.init();
-    _ = meta;
-    const hold = Hold.Hold.init();
-    _ = hold;
+    var board = Board.Board.init();
+    var hold = Hold.Hold.init();
+    var meta = Meta.Meta.init();
     var next = Next.Next.init();
+    var input: c_int = undefined;
     var shape: Bag.Shape = undefined;
     while (input != 27) {
         input = c.getch();
         shape = bag.grab();
         next.draw(shape);
     }
+    board.deinit();
+    hold.deinit();
+    meta.deinit();
+    next.deinit();
     return Display.start;
 }
 

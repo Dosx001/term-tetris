@@ -1,4 +1,3 @@
-const Shape = @import("bag.zig").Shape;
 const c = @cImport({
     @cInclude("ncurses.h");
 });
@@ -34,5 +33,8 @@ pub const Board = struct {
         _ = c.box(win, 0, 0);
         _ = c.wrefresh(win);
         return Board{ .win = win };
+    }
+    pub fn deinit(self: *Board) void {
+        _ = c.delwin(self.win);
     }
 };

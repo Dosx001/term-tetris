@@ -17,4 +17,7 @@ pub const Meta = struct {
         _ = c.wrefresh(win);
         return Meta{ .win = win };
     }
+    pub fn deinit(self: *Meta) void {
+        _ = c.delwin(self.win);
+    }
 };

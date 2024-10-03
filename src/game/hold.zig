@@ -11,4 +11,7 @@ pub const Hold = struct {
         _ = c.wrefresh(win);
         return Hold{ .win = win };
     }
+    pub fn deinit(self: *Hold) void {
+        _ = c.delwin(self.win);
+    }
 };

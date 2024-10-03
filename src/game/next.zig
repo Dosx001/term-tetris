@@ -12,6 +12,9 @@ pub const Next = struct {
         _ = c.wrefresh(win);
         return Next{ .win = win };
     }
+    pub fn deinit(self: *Next) void {
+        _ = c.delwin(self.win);
+    }
     pub fn draw(self: *Next, shape: Shape) void {
         _ = c.mvwprintw(self.win, 2, 4, "    ");
         _ = c.mvwprintw(self.win, 3, 4, "   ");
