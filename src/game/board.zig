@@ -7,7 +7,7 @@ pub const Board = struct {
     pub fn init() Board {
         const win =
             c.newwin(22, 21, 0, 12);
-        _ = c.wprintw(win,
+        _ = c.waddstr(win,
             \\  . . . . . . . . .
             \\  . . . . . . . . .
             \\  . . . . . . . . .

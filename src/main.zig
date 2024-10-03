@@ -39,7 +39,7 @@ pub fn main() !void {
 }
 
 fn start() Display {
-    _ = c.mvprintw(0, 0,
+    _ = c.mvaddstr(0, 0,
         \\    ████████╗███████╗██████╗ ███╗   ███╗
         \\    ╚══██╔══╝██╔════╝██╔══██╗████╗ ████║
         \\       ██║   █████╗  ██████╔╝██╔████╔██║
@@ -113,7 +113,7 @@ fn play() Display {
 }
 
 fn help() Display {
-    _ = c.mvprintw(0, 0,
+    _ = c.mvaddstr(0, 0,
         \\# Help
         \\
         \\## Menu
