@@ -19,7 +19,7 @@ const Display = enum {
 
 pub fn main() !void {
     c.ESCDELAY = 0;
-    _ = c.setlocale(c.LC_ALL, "");
+    _ = c.setlocale(c.LC_ALL, "C.utf8");
     _ = c.initscr();
     _ = c.noecho();
     _ = c.curs_set(0);
