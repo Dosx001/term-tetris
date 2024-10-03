@@ -1,7 +1,6 @@
 const std = @import("std");
 const Bag = @import("game/bag.zig");
 const Board = @import("game/board.zig");
-const Game = @import("game/next.zig");
 const Hold = @import("game/hold.zig");
 const Meta = @import("game/meta.zig");
 const Next = @import("game/next.zig");

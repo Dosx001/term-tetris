@@ -5,7 +5,7 @@ const c = @cImport({
 pub const Meta = struct {
     win: ?*c.WINDOW,
     pub fn init() Meta {
-        const win = c.newwin(8, 12, 14, 0);
+        const win = c.newwin(8, 12, 17, 0);
         _ = c.mvwaddstr(win, 1, 1,
             \\SCORE
             \\ 2147483647

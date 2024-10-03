@@ -6,8 +6,11 @@ pub const Board = struct {
     win: ?*c.WINDOW,
     pub fn init() Board {
         const win =
-            c.newwin(22, 21, 0, 12);
+            c.newwin(25, 21, 0, 12);
         _ = c.waddstr(win,
+            \\  . . . . . . . . .
+            \\  . . . . . . . . .
+            \\  . . . . . . . . .
             \\  . . . . . . . . .
             \\  . . . . . . . . .
             \\  . . . . . . . . .
