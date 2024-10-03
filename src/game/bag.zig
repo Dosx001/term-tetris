@@ -8,6 +8,7 @@ pub const Shape = enum {
     S,
     T,
     Z,
+    Empty,
 };
 
 pub const Bag = struct {

@@ -1,6 +1,7 @@
 const std = @import("std");
 const Bag = @import("game/bag.zig");
 const Board = @import("game/board.zig");
+const Game = @import("game/game.zig");
 const Hold = @import("game/hold.zig");
 const Meta = @import("game/meta.zig");
 const Next = @import("game/next.zig");
@@ -100,23 +101,34 @@ fn start() Display {
 }
 
 fn play() Display {
+    _ = c.nodelay(c.stdscr, true);
     _ = c.refresh();
     var bag = Bag.Bag.init();
     var board = Board.Board.init();
+    var game = Game.Game.init();
     var hold = Hold.Hold.init();
     var meta = Meta.Meta.init();
     var next = Next.Next.init();
+    _ = next.draw(bag.grab());
     var input: c_int = undefined;
-    var shape: Bag.Shape = undefined;
+    var shape: Bag.Shape = .Empty;
+    var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
     while (input != 27) {
+        if (shape == .Empty) {
+            shape = next.draw(bag.grab());
+            game.insert(shape, &state);
+            board.draw(&state);
+        }
         input = c.getch();
-        shape = bag.grab();
-        next.draw(shape);
+        if (input != c.ERR) {
+            shape = .Empty;
+        }
     }
     board.deinit();
     hold.deinit();
     meta.deinit();
     next.deinit();
+    _ = c.nodelay(c.stdscr, false);
     return Display.start;
 }
 

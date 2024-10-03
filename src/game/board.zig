@@ -1,6 +1,18 @@
+const Shape = @import("bag.zig").Shape;
 const c = @cImport({
     @cInclude("ncurses.h");
 });
+
+pub const Color = enum {
+    Black,
+    Red,
+    Orange,
+    Yellow,
+    Green,
+    Cyan,
+    Blue,
+    Magenta,
+};
 
 pub const Board = struct {
     win: ?*c.WINDOW,
@@ -39,5 +51,38 @@ pub const Board = struct {
     }
     pub fn deinit(self: *Board) void {
         _ = c.delwin(self.win);
+    }
+    pub fn draw(self: *Board, state: *[24][10]Color) void {
+        for (0..23) |y| {
+            for (0..9) |x| {
+                const color = switch (state[y][x]) {
+                    .Red => c.COLOR_PAIR(1),
+                    .Orange => c.COLOR_PAIR(2),
+                    .Yellow => c.COLOR_PAIR(3),
+                    .Green => c.COLOR_PAIR(4),
+                    .Cyan => c.COLOR_PAIR(5),
+                    .Blue => c.COLOR_PAIR(6),
+                    .Magenta => c.COLOR_PAIR(7),
+                    .Black => c.COLOR_PAIR(0),
+                };
+                _ = c.wattron(self.win, color);
+                var cx: u8 = @intCast(x);
+                var cy: u8 = @intCast(y);
+                cy += 1;
+                cx = 2 * cx + 1;
+                switch (state[y][x]) {
+                    .Cyan => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Blue => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Orange => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Yellow => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Green => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Magenta => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Red => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                    .Black => _ = c.mvwaddstr(self.win, cy, cx, " "),
+                }
+                _ = c.wattroff(self.win, color);
+            }
+        }
+        _ = c.wrefresh(self.win);
     }
 };
