@@ -29,8 +29,8 @@ pub const Game = struct {
     pub fn left(self: *Game, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (p[1] < 1) return;
-            if (ignore(self, p[0], p[1])) continue;
-            if (state[p[0]][p[1]] != .Black) return;
+            if (ignore(self, p[0], p[1] - 1)) continue;
+            if (state[p[0]][p[1] - 1] != .Black) return;
         }
         const color = state[self.position[0][0]][self.position[0][1]];
         delete(self, state);
@@ -42,8 +42,8 @@ pub const Game = struct {
     pub fn right(self: *Game, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (8 < p[1]) return;
-            if (ignore(self, p[0], p[1])) continue;
-            if (state[p[0]][p[1]] != .Black) return;
+            if (ignore(self, p[0], p[1] + 1)) continue;
+            if (state[p[0]][p[1] + 1] != .Black) return;
         }
         const color = state[self.position[0][0]][self.position[0][1]];
         delete(self, state);
