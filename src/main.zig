@@ -124,13 +124,15 @@ fn play() Display {
             switch (input) {
                 c.KEY_LEFT => game.left(&state),
                 c.KEY_RIGHT => game.right(&state),
-                c.KEY_DOWN => game.down(&state),
+                c.KEY_DOWN => {
+                    if (game.down(&state)) shape = .Empty;
+                },
                 else => {},
             }
             board.draw(&state);
         }
         if (game.update()) {
-            game.down(&state);
+            if (game.down(&state)) shape = .Empty;
             board.draw(&state);
         }
     }

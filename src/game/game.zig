@@ -52,11 +52,11 @@ pub const Game = struct {
             state[self.position[i][0]][self.position[i][1]] = color;
         }
     }
-    pub fn down(self: *Game, state: *[24][10]Color) void {
+    pub fn down(self: *Game, state: *[24][10]Color) bool {
         for (self.position) |p| {
-            if (21 < p[0]) return;
-            if (ignore(self, p[0], p[1])) continue;
-            if (state[p[0]][p[1]] != .Black) return;
+            if (21 < p[0]) return true;
+            if (ignore(self, p[0] + 1, p[1])) continue;
+            if (state[p[0] + 1][p[1]] != .Black) return true;
         }
         const color = state[self.position[0][0]][self.position[0][1]];
         delete(self, state);
@@ -64,6 +64,7 @@ pub const Game = struct {
             self.position[i][0] += 1;
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        return false;
     }
     pub fn insert(self: *Game, shape: Shape, state: *[24][10]Color) void {
         switch (shape) {
