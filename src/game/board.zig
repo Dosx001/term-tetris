@@ -54,7 +54,7 @@ pub const Board = struct {
     }
     pub fn draw(self: *Board, state: *[24][10]Color) void {
         for (0..23) |y| {
-            for (0..9) |x| {
+            for (0..10) |x| {
                 const color = switch (state[y][x]) {
                     .Red => c.COLOR_PAIR(1),
                     .Orange => c.COLOR_PAIR(2),
