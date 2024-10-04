@@ -10,7 +10,16 @@ pub const Game = struct {
     fn delete(self: *Game, state: *[24][10]Color) void {
         inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
     }
+    fn ignore(self: *Game, y: usize, x: usize) bool {
+        inline for (self.position) |p| if (p[0] == y and p[1] == x) return true;
+        return false;
+    }
     pub fn left(self: *Game, state: *[24][10]Color) void {
+        for (self.position) |p| {
+            if (p[1] < 1) return;
+            if (ignore(self, p[0], p[1])) continue;
+            if (state[p[0]][p[1]] != .Black) return;
+        }
         const color = state[self.position[0][0]][self.position[0][1]];
         delete(self, state);
         inline for (0..4) |i| {
@@ -19,6 +28,11 @@ pub const Game = struct {
         }
     }
     pub fn right(self: *Game, state: *[24][10]Color) void {
+        for (self.position) |p| {
+            if (8 < p[1]) return;
+            if (ignore(self, p[0], p[1])) continue;
+            if (state[p[0]][p[1]] != .Black) return;
+        }
         const color = state[self.position[0][0]][self.position[0][1]];
         delete(self, state);
         inline for (0..4) |i| {
