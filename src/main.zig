@@ -121,7 +121,12 @@ fn play() Display {
         }
         input = c.getch();
         if (input != c.ERR) {
-            shape = .Empty;
+            switch (input) {
+                c.KEY_LEFT => game.left(&state),
+                c.KEY_RIGHT => game.right(&state),
+                else => {},
+            }
+            board.draw(&state);
         }
     }
     board.deinit();
