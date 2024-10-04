@@ -127,6 +127,10 @@ fn play() Display {
                 c.KEY_DOWN => {
                     if (game.down(&state)) shape = .Empty;
                 },
+                32 => {
+                    game.harddrop(&state);
+                    shape = .Empty;
+                },
                 else => {},
             }
             board.draw(&state);

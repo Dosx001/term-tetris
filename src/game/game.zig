@@ -66,6 +66,9 @@ pub const Game = struct {
         }
         return false;
     }
+    pub fn harddrop(self: *Game, state: *[24][10]Color) void {
+        while (!down(self, state)) {}
+    }
     pub fn insert(self: *Game, shape: Shape, state: *[24][10]Color) void {
         switch (shape) {
             .I => {
