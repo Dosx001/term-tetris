@@ -129,6 +129,10 @@ fn play() Display {
             }
             board.draw(&state);
         }
+        if (game.update()) {
+            game.down(&state);
+            board.draw(&state);
+        }
     }
     board.deinit();
     hold.deinit();

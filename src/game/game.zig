@@ -3,9 +3,21 @@ const Shape = @import("bag.zig").Shape;
 const Color = @import("board.zig").Color;
 
 pub const Game = struct {
+    now: i64,
+    interval: i64 = 800,
     position: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     pub fn init() Game {
-        return .{};
+        return .{
+            .now = std.time.milliTimestamp(),
+        };
+    }
+    pub fn update(self: *Game) bool {
+        const time = std.time.milliTimestamp();
+        if (self.interval <= time - self.now) {
+            self.now = time;
+            return true;
+        }
+        return false;
     }
     fn delete(self: *Game, state: *[24][10]Color) void {
         inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
