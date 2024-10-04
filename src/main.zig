@@ -124,6 +124,7 @@ fn play() Display {
             switch (input) {
                 c.KEY_LEFT => game.left(&state),
                 c.KEY_RIGHT => game.right(&state),
+                c.KEY_DOWN => game.down(&state),
                 else => {},
             }
             board.draw(&state);
