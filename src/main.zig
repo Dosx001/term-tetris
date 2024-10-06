@@ -124,6 +124,7 @@ fn play() Display {
             switch (input) {
                 c.KEY_LEFT => game.left(&state),
                 c.KEY_RIGHT => game.right(&state),
+                c.KEY_UP => game.rotate(&state),
                 c.KEY_DOWN => {
                     if (game.down(&state)) shape = .Empty;
                 },
