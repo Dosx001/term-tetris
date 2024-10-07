@@ -27,7 +27,7 @@ pub const Meta = struct {
         var count: usize = 0;
         var row: i8 = 23;
         while (0 <= row) : (row -= 1) {
-            for (0..10) |j| {
+            inline for (0..10) |j| {
                 if (state[@intCast(row)][j] == Color.Black) break;
             } else {
                 if (start == 24) start = @intCast(row);
@@ -38,11 +38,8 @@ pub const Meta = struct {
         if (start == 24) return;
         count -= 1;
         for (start - count..start + 1) |i| {
-            for (0..10) |j| {
-                state[i][j] = Color.Black;
-            }
+            inline for (0..10) |j| state[i][j] = Color.Black;
         }
-
         var i: usize = start;
         var j: i8 = @intCast(start - count - 1);
         while (0 <= j) : (j -= 1) {
