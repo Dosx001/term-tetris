@@ -32,37 +32,35 @@ pub const Next = struct {
         };
         _ = c.wattron(self.win, color);
         switch (shape) {
-            .I => _ = c.mvwaddstr(self.win, 2, 4, "####"),
+            .I => _ = c.mvwaddstr(self.win, 2, 4, "    "),
             .J => {
-                _ = c.mvwaddstr(self.win, 2, 4, "#");
-                _ = c.mvwaddstr(self.win, 3, 4, "###");
+                _ = c.mvwaddstr(self.win, 2, 4, " ");
+                _ = c.mvwaddstr(self.win, 3, 4, "   ");
             },
             .L => {
-                _ = c.mvwaddstr(self.win, 2, 6, "#");
-                _ = c.mvwaddstr(self.win, 3, 4, "###");
+                _ = c.mvwaddstr(self.win, 2, 6, " ");
+                _ = c.mvwaddstr(self.win, 3, 4, "   ");
             },
             .O => {
-                _ = c.mvwaddstr(self.win, 2, 4, "##");
-                _ = c.mvwaddstr(self.win, 3, 4, "##");
+                _ = c.mvwaddstr(self.win, 2, 4, "  ");
+                _ = c.mvwaddstr(self.win, 3, 4, "  ");
             },
             .S => {
-                _ = c.mvwaddstr(self.win, 2, 5, "##");
-                _ = c.mvwaddstr(self.win, 3, 4, "##");
+                _ = c.mvwaddstr(self.win, 2, 5, "  ");
+                _ = c.mvwaddstr(self.win, 3, 4, "  ");
             },
             .T => {
-                _ = c.mvwaddstr(self.win, 2, 5, "#");
-                _ = c.mvwaddstr(self.win, 3, 4, "###");
+                _ = c.mvwaddstr(self.win, 2, 5, " ");
+                _ = c.mvwaddstr(self.win, 3, 4, "   ");
             },
             .Z => {
-                _ = c.mvwaddstr(self.win, 2, 4, "##");
-                _ = c.mvwaddstr(self.win, 3, 5, "##");
+                _ = c.mvwaddstr(self.win, 2, 4, "  ");
+                _ = c.mvwaddstr(self.win, 3, 5, "  ");
             },
             else => {},
         }
         _ = c.wattroff(self.win, color);
         _ = c.wrefresh(self.win);
-        // // std.mem.swap(Shape, &self.shape, &shape);
-        // return shape;
         const tmp = self.shape;
         self.shape = shape;
         return tmp;

@@ -52,6 +52,7 @@ const mShape = .{
 pub const Game = struct {
     now: i64,
     interval: i64 = 800,
+    ghost: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     position: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     orientation: Matrix = undefined,
     col: usize = 0,
@@ -72,29 +73,37 @@ pub const Game = struct {
     fn delete(self: *Game, state: *[24][10]Color) void {
         inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
     }
-    fn ignore(self: *Game, y: usize, x: usize) bool {
+    fn deleteGhost(self: *Game, state: *[24][10]Color) void {
+        inline for (self.ghost) |p| {
+            if (state[p[0]][p[1]] == .Ghost)
+                state[p[0]][p[1]] = .Black;
+        }
+    }
+    fn ignore(self: *Game, state: *[24][10]Color, y: usize, x: usize) bool {
+        if (state[y][x] == .Ghost) return true;
         inline for (self.position) |p| if (p[0] == y and p[1] == x) return true;
         return false;
     }
     pub fn left(self: *Game, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (p[1] < 1) return;
-            if (ignore(self, p[0], p[1] - 1)) continue;
+            if (self.ignore(state, p[0], p[1] - 1)) continue;
             if (state[p[0]][p[1] - 1] != .Black) return;
         }
         if (self.col != 0)
             self.col -= 1;
         const color = state[self.position[0][0]][self.position[0][1]];
-        delete(self, state);
+        self.delete(state);
         inline for (0..4) |i| {
             self.position[i][1] -= 1;
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        self.updateGhost(state);
     }
     pub fn right(self: *Game, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (8 < p[1]) return;
-            if (ignore(self, p[0], p[1] + 1)) continue;
+            if (self.ignore(state, p[0], p[1] + 1)) continue;
             if (state[p[0]][p[1] + 1] != .Black) return;
         }
         switch (self.orientation) {
@@ -109,21 +118,22 @@ pub const Game = struct {
             .M2x2 => {},
         }
         const color = state[self.position[0][0]][self.position[0][1]];
-        delete(self, state);
+        self.delete(state);
         inline for (0..4) |i| {
             self.position[i][1] += 1;
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        self.updateGhost(state);
     }
     pub fn down(self: *Game, state: *[24][10]Color) bool {
         for (self.position) |p| {
             if (21 < p[0]) return true;
-            if (ignore(self, p[0] + 1, p[1])) continue;
+            if (self.ignore(state, p[0] + 1, p[1])) continue;
             if (state[p[0] + 1][p[1]] != .Black) return true;
         }
         self.row += 1;
         const color = state[self.position[0][0]][self.position[0][1]];
-        delete(self, state);
+        self.delete(state);
         inline for (0..4) |i| {
             self.position[i][0] += 1;
             state[self.position[i][0]][self.position[i][1]] = color;
@@ -131,7 +141,35 @@ pub const Game = struct {
         return false;
     }
     pub fn harddrop(self: *Game, state: *[24][10]Color) void {
-        while (!down(self, state)) {}
+        while (!self.down(state)) {}
+    }
+    fn updateGhost(self: *Game, state: *[24][10]Color) void {
+        self.deleteGhost(state);
+        std.mem.copyForwards([2]usize, &self.ghost, &self.position);
+        self.ghostDown(state);
+    }
+    fn ghostDown(self: *Game, state: *[24][10]Color) void {
+        var check = true;
+        while (check) {
+            for (self.ghost) |p| {
+                if (21 < p[0]) {
+                    check = false;
+                    break;
+                }
+                if (self.ignore(state, p[0] + 1, p[1])) continue;
+                if (state[p[0] + 1][p[1]] != .Black) {
+                    check = false;
+                    break;
+                }
+            }
+            if (check) {
+                inline for (0..4) |i| self.ghost[i][0] += 1;
+            }
+        }
+        for (self.ghost) |p| {
+            if (state[p[0]][p[1]] == .Black)
+                state[p[0]][p[1]] = .Ghost;
+        }
     }
     pub fn rotate(self: *Game, state: *[24][10]Color) void {
         var position: [4][2]usize = undefined;
@@ -153,7 +191,7 @@ pub const Game = struct {
                     }
                 }
                 for (position) |p| {
-                    if (ignore(self, p[0], p[1])) continue;
+                    if (self.ignore(state, p[0], p[1])) continue;
                     if (state[p[0]][p[1]] != .Black) return;
                 }
                 self.orientation = Matrix{ .M4x4 = tmp };
@@ -175,7 +213,7 @@ pub const Game = struct {
                     }
                 }
                 for (position) |p| {
-                    if (ignore(self, p[0], p[1])) continue;
+                    if (self.ignore(state, p[0], p[1])) continue;
                     if (state[p[0]][p[1]] != .Black) return;
                 }
                 self.orientation = Matrix{ .M3x3 = tmp };
@@ -183,12 +221,13 @@ pub const Game = struct {
             .M2x2 => return,
         }
         const color = state[self.position[0][0]][self.position[0][1]];
-        delete(self, state);
+        self.delete(state);
         inline for (0..4) |i| {
             self.position[i][0] = position[i][0];
             self.position[i][1] = position[i][1];
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        self.updateGhost(state);
     }
     pub fn insert(self: *Game, shape: Shape, state: *[24][10]Color) void {
         self.row = 0;
@@ -251,5 +290,7 @@ pub const Game = struct {
             },
             .Empty => {},
         }
+        self.ghost = self.position;
+        self.ghostDown(state);
     }
 };
