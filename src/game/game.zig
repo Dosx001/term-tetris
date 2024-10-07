@@ -70,10 +70,10 @@ pub const Game = struct {
         }
         return false;
     }
-    fn delete(self: *Game, state: *[24][10]Color) void {
+    pub fn delete(self: *Game, state: *[24][10]Color) void {
         inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
     }
-    fn deleteGhost(self: *Game, state: *[24][10]Color) void {
+    pub fn deleteGhost(self: *Game, state: *[24][10]Color) void {
         inline for (self.ghost) |p| {
             if (state[p[0]][p[1]] == .Ghost)
                 state[p[0]][p[1]] = .Black;

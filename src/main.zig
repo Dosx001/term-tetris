@@ -110,11 +110,13 @@ fn play() Display {
     var meta = Meta.Meta.init();
     var next = Next.Next.init();
     _ = next.draw(bag.grab());
+    var allow = true;
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
     while (input != 27) {
         if (shape == .Empty) {
+            allow = true;
             meta.clear(&state);
             shape = next.draw(bag.grab());
             game.insert(shape, &state);
@@ -133,6 +135,19 @@ fn play() Display {
                 32 => {
                     game.harddrop(&state);
                     shape = .Empty;
+                },
+                99 => {
+                    if (allow) {
+                        allow = false;
+                        game.delete(&state);
+                        game.deleteGhost(&state);
+                        shape = hold.capture(shape);
+                        if (shape == .Empty) {
+                            shape = next.draw(bag.grab());
+                        }
+                        game.insert(shape, &state);
+                        board.colorGhost(shape);
+                    }
                 },
                 else => {},
             }
