@@ -115,6 +115,7 @@ fn play() Display {
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
     while (input != 27) {
         if (shape == .Empty) {
+            meta.clear(&state);
             shape = next.draw(bag.grab());
             game.insert(shape, &state);
             board.draw(&state);
