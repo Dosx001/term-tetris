@@ -117,7 +117,7 @@ fn play() Display {
     while (input != 27) {
         if (shape == .Empty) {
             allow = true;
-            meta.clear(&state);
+            meta.refresh(&state);
             shape = next.draw(bag.grab());
             game.insert(shape, &state);
             board.colorGhost(shape);

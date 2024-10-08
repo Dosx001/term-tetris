@@ -40,6 +40,7 @@ pub const Meta = struct {
     win: ?*c.WINDOW,
     lines: usize = 0,
     level: usize = 0,
+    score: usize = 0,
     pub fn init() Meta {
         const win = c.newwin(8, 12, 17, 0);
         _ = c.mvwaddstr(win, 1, 1,
@@ -57,7 +58,7 @@ pub const Meta = struct {
     pub fn deinit(self: *Meta) void {
         _ = c.delwin(self.win);
     }
-    pub fn clear(self: *Meta, state: *[24][10]Color) void {
+    pub fn refresh(self: *Meta, state: *[24][10]Color) void {
         var start: usize = 24;
         var count: usize = 0;
         var row: i8 = 23;
@@ -72,6 +73,15 @@ pub const Meta = struct {
         }
         if (start == 24) return;
         self.lines += count;
+        _ = c.mvwprintw(self.win, 6, 1, "%i", self.lines);
+        switch (count) {
+            1 => self.score += 40 * (self.level + 1),
+            2 => self.score += 100 * (self.level + 1),
+            3 => self.score += 300 * (self.level + 1),
+            4 => self.score += 1200 * (self.level + 1),
+            else => {},
+        }
+        _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
         count -= 1;
         for (start - count..start + 1) |i| {
             inline for (0..10) |j| state[i][j] = Color.Black;
@@ -86,7 +96,6 @@ pub const Meta = struct {
             self.level += 1;
             _ = c.mvwprintw(self.win, 4, 1, "%i", self.level);
         }
-        _ = c.mvwprintw(self.win, 6, 1, "%i", self.lines);
         _ = c.wrefresh(self.win);
     }
 };
