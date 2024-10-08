@@ -51,7 +51,7 @@ const mShape = .{
 
 pub const Logic = struct {
     now: i64,
-    interval: i64 = 800,
+    interval: i64 = 1000,
     ghost: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     position: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     orientation: Matrix = undefined,

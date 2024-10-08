@@ -39,7 +39,7 @@ const levels = [29]u16{
 pub const Meta = struct {
     win: ?*c.WINDOW,
     lines: usize = 0,
-    level: usize = 0,
+    level: usize = 1,
     score: usize = 0,
     pub fn init() Meta {
         const win = c.newwin(8, 12, 17, 0);
@@ -47,7 +47,7 @@ pub const Meta = struct {
             \\SCORE
             \\ 0
             \\ LEVEL
-            \\ 0
+            \\ 1
             \\ LINES
             \\ 0
         );
