@@ -131,9 +131,10 @@ fn play() Display {
                 c.KEY_UP => game.rotate(&state),
                 c.KEY_DOWN => {
                     if (game.down(&state)) shape = .Empty;
+                    meta.updateScore(1);
                 },
                 32 => {
-                    game.harddrop(&state);
+                    meta.updateScore(game.harddrop(&state));
                     shape = .Empty;
                 },
                 99 => {

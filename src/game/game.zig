@@ -142,8 +142,10 @@ pub const Game = struct {
         }
         return false;
     }
-    pub fn harddrop(self: *Game, state: *[24][10]Color) void {
-        while (!self.down(state)) {}
+    pub fn harddrop(self: *Game, state: *[24][10]Color) usize {
+        var count: usize = 0;
+        while (!self.down(state)) count += 1;
+        return count * 2;
     }
     fn updateGhost(self: *Game, state: *[24][10]Color) void {
         self.deleteGhost(state);

@@ -98,4 +98,9 @@ pub const Meta = struct {
         }
         _ = c.wrefresh(self.win);
     }
+    pub fn updateScore(self: *Meta, value: usize) void {
+        self.score += value;
+        _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
+        _ = c.wrefresh(self.win);
+    }
 };
