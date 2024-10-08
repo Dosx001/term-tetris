@@ -17,7 +17,7 @@ pub const Color = enum {
 
 pub const Board = struct {
     win: ?*c.WINDOW,
-    color: Color = Color.Black,
+    color: c_int = 0,
     pub fn init() Board {
         const win =
             c.newwin(25, 21, 0, 12);
@@ -56,14 +56,14 @@ pub const Board = struct {
     }
     pub fn colorGhost(self: *Board, shape: Shape) void {
         switch (shape) {
-            .I => self.color = Color.Cyan,
-            .J => self.color = Color.Blue,
-            .L => self.color = Color.Orange,
-            .O => self.color = Color.Yellow,
-            .S => self.color = Color.Green,
-            .T => self.color = Color.Magenta,
-            .Z => self.color = Color.Red,
-            else => self.color = Color.Black,
+            .I => self.color = c.COLOR_PAIR(5),
+            .J => self.color = c.COLOR_PAIR(6),
+            .L => self.color = c.COLOR_PAIR(2),
+            .O => self.color = c.COLOR_PAIR(3),
+            .S => self.color = c.COLOR_PAIR(4),
+            .T => self.color = c.COLOR_PAIR(7),
+            .Z => self.color = c.COLOR_PAIR(1),
+            else => self.color = c.COLOR_PAIR(0),
         }
     }
     pub fn draw(self: *Board, state: *[24][10]Color) void {
@@ -78,16 +78,7 @@ pub const Board = struct {
                     .Blue => c.COLOR_PAIR(6),
                     .Magenta => c.COLOR_PAIR(7),
                     .Black => c.COLOR_PAIR(0),
-                    .Ghost => switch (self.color) {
-                        .Cyan => c.COLOR_PAIR(5),
-                        .Blue => c.COLOR_PAIR(6),
-                        .Orange => c.COLOR_PAIR(2),
-                        .Yellow => c.COLOR_PAIR(3),
-                        .Green => c.COLOR_PAIR(4),
-                        .Magenta => c.COLOR_PAIR(7),
-                        .Red => c.COLOR_PAIR(1),
-                        else => c.COLOR_PAIR(0),
-                    },
+                    .Ghost => self.color,
                 };
                 _ = c.wattron(self.win, color);
                 var cx: u8 = @intCast(x);
