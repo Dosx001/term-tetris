@@ -1,8 +1,8 @@
 const std = @import("std");
 const Bag = @import("game/bag.zig");
 const Board = @import("game/board.zig");
-const Game = @import("game/game.zig");
 const Hold = @import("game/hold.zig");
+const Logic = @import("game/logic.zig");
 const Meta = @import("game/meta.zig");
 const Next = @import("game/next.zig");
 const c = @cImport({
@@ -113,50 +113,50 @@ fn play() Display {
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
-    var game = Game.Game.init();
+    var logic = Logic.Logic.init();
     while (input != 27) {
         if (shape == .Empty) {
             allow = true;
             meta.refresh(&state);
             shape = next.draw(bag.grab());
-            game.insert(shape, &state);
+            logic.insert(shape, &state);
             board.colorGhost(shape);
             board.draw(&state);
         }
         input = c.getch();
         if (input != c.ERR) {
             switch (input) {
-                c.KEY_LEFT => game.left(&state),
-                c.KEY_RIGHT => game.right(&state),
-                c.KEY_UP => game.rotate(&state, true),
+                c.KEY_LEFT => logic.left(&state),
+                c.KEY_RIGHT => logic.right(&state),
+                c.KEY_UP => logic.rotate(&state, true),
                 c.KEY_DOWN => {
-                    if (game.down(&state)) shape = .Empty;
+                    if (logic.down(&state)) shape = .Empty;
                     meta.updateScore(1);
                 },
                 32 => {
-                    meta.updateScore(game.harddrop(&state));
+                    meta.updateScore(logic.harddrop(&state));
                     shape = .Empty;
                 },
                 99 => {
                     if (allow) {
                         allow = false;
-                        game.delete(&state);
-                        game.deleteGhost(&state);
+                        logic.delete(&state);
+                        logic.deleteGhost(&state);
                         shape = hold.capture(shape);
                         if (shape == .Empty) {
                             shape = next.draw(bag.grab());
                         }
-                        game.insert(shape, &state);
+                        logic.insert(shape, &state);
                         board.colorGhost(shape);
                     }
                 },
-                122 => game.rotate(&state, false),
+                122 => logic.rotate(&state, false),
                 else => {},
             }
             board.draw(&state);
         }
-        if (game.update()) {
-            if (game.down(&state)) shape = .Empty;
+        if (logic.update()) {
+            if (logic.down(&state)) shape = .Empty;
             board.draw(&state);
         }
     }

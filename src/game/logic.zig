@@ -49,7 +49,7 @@ const mShape = .{
     },
 };
 
-pub const Game = struct {
+pub const Logic = struct {
     now: i64,
     interval: i64 = 800,
     ghost: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
@@ -57,12 +57,12 @@ pub const Game = struct {
     orientation: Matrix = undefined,
     col: usize = 0,
     row: usize = 0,
-    pub fn init() Game {
+    pub fn init() Logic {
         return .{
             .now = std.time.milliTimestamp(),
         };
     }
-    pub fn update(self: *Game) bool {
+    pub fn update(self: *Logic) bool {
         const time = std.time.milliTimestamp();
         const diff: i64 = time - self.now;
         if (self.interval <= diff) {
@@ -72,21 +72,21 @@ pub const Game = struct {
         std.time.sleep(@intCast(diff * 1000));
         return false;
     }
-    pub fn delete(self: *Game, state: *[24][10]Color) void {
+    pub fn delete(self: *Logic, state: *[24][10]Color) void {
         inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
     }
-    pub fn deleteGhost(self: *Game, state: *[24][10]Color) void {
+    pub fn deleteGhost(self: *Logic, state: *[24][10]Color) void {
         inline for (self.ghost) |p| {
             if (state[p[0]][p[1]] == .Ghost)
                 state[p[0]][p[1]] = .Black;
         }
     }
-    fn ignore(self: *Game, state: *[24][10]Color, y: usize, x: usize) bool {
+    fn ignore(self: *Logic, state: *[24][10]Color, y: usize, x: usize) bool {
         if (state[y][x] == .Ghost) return true;
         inline for (self.position) |p| if (p[0] == y and p[1] == x) return true;
         return false;
     }
-    pub fn left(self: *Game, state: *[24][10]Color) void {
+    pub fn left(self: *Logic, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (p[1] < 1) return;
             if (self.ignore(state, p[0], p[1] - 1)) continue;
@@ -102,7 +102,7 @@ pub const Game = struct {
         }
         self.updateGhost(state);
     }
-    pub fn right(self: *Game, state: *[24][10]Color) void {
+    pub fn right(self: *Logic, state: *[24][10]Color) void {
         for (self.position) |p| {
             if (8 < p[1]) return;
             if (self.ignore(state, p[0], p[1] + 1)) continue;
@@ -127,7 +127,7 @@ pub const Game = struct {
         }
         self.updateGhost(state);
     }
-    pub fn down(self: *Game, state: *[24][10]Color) bool {
+    pub fn down(self: *Logic, state: *[24][10]Color) bool {
         for (self.position) |p| {
             if (21 < p[0]) return true;
             if (self.ignore(state, p[0] + 1, p[1])) continue;
@@ -142,17 +142,17 @@ pub const Game = struct {
         }
         return false;
     }
-    pub fn harddrop(self: *Game, state: *[24][10]Color) usize {
+    pub fn harddrop(self: *Logic, state: *[24][10]Color) usize {
         var count: usize = 0;
         while (!self.down(state)) count += 1;
         return count * 2;
     }
-    fn updateGhost(self: *Game, state: *[24][10]Color) void {
+    fn updateGhost(self: *Logic, state: *[24][10]Color) void {
         self.deleteGhost(state);
         std.mem.copyForwards([2]usize, &self.ghost, &self.position);
         self.ghostDown(state);
     }
-    fn ghostDown(self: *Game, state: *[24][10]Color) void {
+    fn ghostDown(self: *Logic, state: *[24][10]Color) void {
         var check = true;
         while (check) {
             for (self.ghost) |p| {
@@ -175,7 +175,7 @@ pub const Game = struct {
                 state[p[0]][p[1]] = .Ghost;
         }
     }
-    pub fn rotate(self: *Game, state: *[24][10]Color, clockwise: bool) void {
+    pub fn rotate(self: *Logic, state: *[24][10]Color, clockwise: bool) void {
         var position: [4][2]usize = undefined;
         switch (self.orientation) {
             .M4x4 => |m| {
@@ -237,7 +237,7 @@ pub const Game = struct {
         }
         self.updateGhost(state);
     }
-    pub fn insert(self: *Game, shape: Shape, state: *[24][10]Color) void {
+    pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) void {
         self.row = 0;
         self.col = if (shape == .O) 4 else 3;
         switch (shape) {
