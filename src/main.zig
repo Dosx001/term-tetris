@@ -105,7 +105,6 @@ fn play() Display {
     _ = c.refresh();
     var bag = Bag.Bag.init();
     var board = Board.Board.init();
-    var game = Game.Game.init();
     var hold = Hold.Hold.init();
     var meta = Meta.Meta.init();
     var next = Next.Next.init();
@@ -114,6 +113,7 @@ fn play() Display {
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
+    var game = Game.Game.init();
     while (input != 27) {
         if (shape == .Empty) {
             allow = true;

@@ -64,10 +64,12 @@ pub const Game = struct {
     }
     pub fn update(self: *Game) bool {
         const time = std.time.milliTimestamp();
-        if (self.interval <= time - self.now) {
+        const diff: i64 = time - self.now;
+        if (self.interval <= diff) {
             self.now = time;
             return true;
         }
+        std.time.sleep(@intCast(diff * 1000));
         return false;
     }
     pub fn delete(self: *Game, state: *[24][10]Color) void {
