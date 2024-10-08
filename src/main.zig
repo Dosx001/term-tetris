@@ -128,7 +128,7 @@ fn play() Display {
             switch (input) {
                 c.KEY_LEFT => game.left(&state),
                 c.KEY_RIGHT => game.right(&state),
-                c.KEY_UP => game.rotate(&state),
+                c.KEY_UP => game.rotate(&state, true),
                 c.KEY_DOWN => {
                     if (game.down(&state)) shape = .Empty;
                     meta.updateScore(1);
@@ -150,6 +150,7 @@ fn play() Display {
                         board.colorGhost(shape);
                     }
                 },
+                122 => game.rotate(&state, false),
                 else => {},
             }
             board.draw(&state);

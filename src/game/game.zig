@@ -175,14 +175,16 @@ pub const Game = struct {
                 state[p[0]][p[1]] = .Ghost;
         }
     }
-    pub fn rotate(self: *Game, state: *[24][10]Color) void {
+    pub fn rotate(self: *Game, state: *[24][10]Color, clockwise: bool) void {
         var position: [4][2]usize = undefined;
         switch (self.orientation) {
             .M4x4 => |m| {
                 var tmp: [4][4]usize = undefined;
                 inline for (0..4) |i| {
                     inline for (0..4) |j| {
-                        tmp[j][3 - i] = m[i][j];
+                        if (clockwise) {
+                            tmp[j][3 - i] = m[i][j];
+                        } else tmp[3 - j][i] = m[i][j];
                     }
                 }
                 var idx: usize = 0;
@@ -204,7 +206,9 @@ pub const Game = struct {
                 var tmp: [3][3]usize = undefined;
                 inline for (0..3) |i| {
                     inline for (0..3) |j| {
-                        tmp[j][2 - i] = m[i][j];
+                        if (clockwise) {
+                            tmp[j][2 - i] = m[i][j];
+                        } else tmp[2 - j][i] = m[i][j];
                     }
                 }
                 var idx: usize = 0;
