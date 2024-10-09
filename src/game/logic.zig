@@ -301,4 +301,9 @@ pub const Logic = struct {
         self.ghost = self.position;
         self.ghostDown(state);
     }
+    pub fn updateInterval(self: *Logic, level: usize) void {
+        if (20 < level) return;
+        const diff: f64 = @floatFromInt(level - 1);
+        self.interval = @intFromFloat(std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000);
+    }
 };

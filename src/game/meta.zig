@@ -58,7 +58,7 @@ pub const Meta = struct {
     pub fn deinit(self: *Meta) void {
         _ = c.delwin(self.win);
     }
-    pub fn refresh(self: *Meta, state: *[24][10]Color) void {
+    pub fn refresh(self: *Meta, state: *[24][10]Color) bool {
         var start: usize = 24;
         var count: usize = 0;
         var row: i8 = 23;
@@ -71,7 +71,7 @@ pub const Meta = struct {
                 if (count == 4) break;
             }
         }
-        if (start == 24) return;
+        if (start == 24) return false;
         self.lines += count;
         _ = c.mvwprintw(self.win, 6, 1, "%i", self.lines);
         switch (count) {
@@ -95,8 +95,11 @@ pub const Meta = struct {
         if (self.level != 30 and levels[self.level] <= self.lines) {
             self.level += 1;
             _ = c.mvwprintw(self.win, 4, 1, "%i", self.level);
+            _ = c.wrefresh(self.win);
+            return true;
         }
         _ = c.wrefresh(self.win);
+        return false;
     }
     pub fn updateScore(self: *Meta, value: usize) void {
         self.score += value;
