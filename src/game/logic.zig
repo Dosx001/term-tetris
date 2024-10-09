@@ -133,7 +133,15 @@ pub const Logic = struct {
             if (self.ignore(state, p[0] + 1, p[1])) continue;
             if (state[p[0] + 1][p[1]] != .Black) return true;
         }
-        self.row += 1;
+        switch (self.orientation) {
+            .M4x4 => {
+                if (self.row != 19) self.row += 1;
+            },
+            .M3x3 => {
+                if (self.row != 20) self.row += 1;
+            },
+            .M2x2 => {},
+        }
         const color = state[self.position[0][0]][self.position[0][1]];
         self.delete(state);
         inline for (0..4) |i| {
