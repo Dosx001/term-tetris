@@ -57,6 +57,7 @@ pub const Logic = struct {
     orientation: Matrix = undefined,
     col: usize = 0,
     row: usize = 0,
+    kick: bool = true,
     pub fn init() Logic {
         return .{
             .now = std.time.milliTimestamp(),
@@ -183,6 +184,29 @@ pub const Logic = struct {
                 state[p[0]][p[1]] = .Ghost;
         }
     }
+    fn checkRotation(self: *Logic, state: *[24][10]Color, position: *[4][2]usize) bool {
+        for (position) |p| {
+            if (self.ignore(state, p[0], p[1])) continue;
+            if (state[p[0]][p[1]] != .Black) break;
+        } else return false;
+        if (self.kick) {
+            self.kick = false;
+            const offset: usize = switch (self.orientation) {
+                .M4x4 => 2,
+                .M3x3 => 1,
+                .M2x2 => 0,
+            };
+            inline for (0..4) |i| position[i][0] -= offset;
+            for (position) |p| {
+                if (self.ignore(state, p[0], p[1])) continue;
+                if (state[p[0]][p[1]] != .Black) {
+                    self.row -= offset;
+                    return true;
+                }
+            } else return false;
+        }
+        return true;
+    }
     pub fn rotate(self: *Logic, state: *[24][10]Color, clockwise: bool) void {
         var position: [4][2]usize = undefined;
         switch (self.orientation) {
@@ -204,10 +228,7 @@ pub const Logic = struct {
                         idx += 1;
                     }
                 }
-                for (position) |p| {
-                    if (self.ignore(state, p[0], p[1])) continue;
-                    if (state[p[0]][p[1]] != .Black) return;
-                }
+                if (self.checkRotation(state, &position)) return;
                 self.orientation = Matrix{ .M4x4 = tmp };
             },
             .M3x3 => |m| {
@@ -228,10 +249,7 @@ pub const Logic = struct {
                         idx += 1;
                     }
                 }
-                for (position) |p| {
-                    if (self.ignore(state, p[0], p[1])) continue;
-                    if (state[p[0]][p[1]] != .Black) return;
-                }
+                if (self.checkRotation(state, &position)) return;
                 self.orientation = Matrix{ .M3x3 = tmp };
             },
             .M2x2 => return,
@@ -246,6 +264,7 @@ pub const Logic = struct {
         self.updateGhost(state);
     }
     pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) void {
+        self.kick = true;
         self.row = 0;
         self.col = if (shape == .O) 4 else 3;
         switch (shape) {
