@@ -107,8 +107,7 @@ fn play() Display {
     var board = Board.Board.init();
     var hold = Hold.Hold.init();
     var meta = Meta.Meta.init();
-    var next = Next.Next.init();
-    _ = next.draw(bag.grab());
+    var next = Next.Next.init(&bag);
     var allow = true;
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
