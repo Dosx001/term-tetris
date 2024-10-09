@@ -81,10 +81,8 @@ pub const Board = struct {
                     .Ghost => self.color,
                 };
                 _ = c.wattron(self.win, color);
-                var cx: u8 = @intCast(x);
-                var cy: u8 = @intCast(y);
-                cy += 1;
-                cx = 2 * cx + 1;
+                const cx = 2 * @as(c_int, @intCast(x)) + 1;
+                const cy = @as(c_int, @intCast(y)) + 1;
                 switch (state[y][x]) {
                     .Cyan => _ = c.mvwaddstr(self.win, cy, cx, " "),
                     .Blue => _ = c.mvwaddstr(self.win, cy, cx, " "),
