@@ -129,7 +129,7 @@ pub const Logic = struct {
     }
     pub fn down(self: *Logic, state: *[24][10]Color) bool {
         for (self.position) |p| {
-            if (21 < p[0]) return true;
+            if (22 == p[0]) return true;
             if (self.ignore(state, p[0] + 1, p[1])) continue;
             if (state[p[0] + 1][p[1]] != .Black) return true;
         }
