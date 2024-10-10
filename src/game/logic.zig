@@ -141,6 +141,7 @@ pub const Logic = struct {
             self.position[i][0] += 1;
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        self.now = std.time.milliTimestamp();
         return false;
     }
     pub fn harddrop(self: *Logic, state: *[24][10]Color) usize {
@@ -318,6 +319,7 @@ pub const Logic = struct {
         }
         self.ghost = self.position;
         self.ghostDown(state);
+        self.now = std.time.milliTimestamp();
     }
     pub fn updateInterval(self: *Logic, level: usize) void {
         if (20 < level) return;
