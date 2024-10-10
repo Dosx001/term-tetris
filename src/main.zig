@@ -118,7 +118,7 @@ fn play() Display {
             allow = true;
             if (meta.refresh(&state)) logic.updateInterval(meta.level);
             shape = next.draw(bag.grab());
-            logic.insert(shape, &state);
+            if (logic.insert(shape, &state)) break;
             board.colorGhost(shape);
             board.draw(&state);
         }
@@ -145,7 +145,7 @@ fn play() Display {
                         if (shape == .Empty) {
                             shape = next.draw(bag.grab());
                         }
-                        logic.insert(shape, &state);
+                        if (logic.insert(shape, &state)) break;
                         board.colorGhost(shape);
                     }
                 },
@@ -164,6 +164,7 @@ fn play() Display {
     meta.deinit();
     next.deinit();
     _ = c.nodelay(c.stdscr, false);
+    while (c.getch() != 27) {}
     return Display.start;
 }
 

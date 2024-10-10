@@ -56,7 +56,7 @@ pub const Logic = struct {
     position: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     orientation: Matrix = undefined,
     col: usize = 0,
-    row: usize = 0,
+    row: usize = 4,
     kick: bool = true,
     pub fn init() Logic {
         return .{
@@ -255,71 +255,65 @@ pub const Logic = struct {
         }
         self.updateGhost(state);
     }
-    pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) void {
+    pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) bool {
         self.kick = true;
-        self.row = 0;
+        self.row = 4;
         self.col = if (shape == .O) 4 else 3;
+        var color: Color = undefined;
         switch (shape) {
             .I => {
+                color = .Cyan;
                 self.orientation = .{ .M4x4 = mShape[0] };
-                inline for (3..7) |i| state[0][i] = .Cyan;
-                inline for (0..4) |i| self.position[i] = .{ 0, i + 3 };
+                self.position = .{ .{ 5, 3 }, .{ 5, 4 }, .{ 5, 5 }, .{ 5, 6 } };
             },
             .J => {
+                color = .Blue;
                 self.orientation = .{ .M3x3 = mShape[1] };
-                state[0][3] = .Blue;
-                inline for (3..6) |i| state[1][i] = .Blue;
-                self.position[0] = .{ 0, 3 };
-                inline for (1..4) |i| self.position[i] = .{ 1, i + 2 };
+                self.position = .{ .{ 4, 3 }, .{ 5, 3 }, .{ 5, 4 }, .{ 5, 5 } };
             },
             .L => {
+                color = .Orange;
                 self.orientation = .{ .M3x3 = mShape[2] };
-                state[0][5] = .Orange;
-                inline for (3..6) |i| state[1][i] = .Orange;
-                self.position[0] = .{ 0, 5 };
-                inline for (1..4) |i| self.position[i] = .{ 1, i + 2 };
+                self.position = .{ .{ 5, 3 }, .{ 5, 4 }, .{ 5, 5 }, .{ 4, 5 } };
             },
             .O => {
+                color = .Yellow;
                 self.orientation = .{ .M2x2 = mShape[3] };
-                inline for (4..6) |i| {
-                    state[0][i] = .Yellow;
-                    state[1][i] = .Yellow;
-                }
-                inline for (0..2) |i| {
-                    self.position[i] = .{ 0, i + 4 };
-                    self.position[i + 2] = .{ 1, i + 4 };
-                }
+                self.position = .{ .{ 4, 4 }, .{ 4, 5 }, .{ 5, 4 }, .{ 5, 5 } };
             },
             .S => {
+                color = .Green;
                 self.orientation = .{ .M3x3 = mShape[4] };
-                inline for (3..5) |i| {
-                    state[0][i + 1] = .Green;
-                    state[1][i] = .Green;
-                }
-                inline for (0..2) |i| self.position[i] = .{ 0, i + 4 };
-                inline for (2..4) |i| self.position[i] = .{ 1, i + 1 };
+                self.position = .{ .{ 5, 3 }, .{ 5, 4 }, .{ 4, 4 }, .{ 4, 5 } };
             },
             .T => {
+                color = .Magenta;
                 self.orientation = .{ .M3x3 = mShape[5] };
-                state[0][4] = .Magenta;
-                inline for (3..6) |i| state[1][i] = .Magenta;
-                self.position[0] = .{ 0, 4 };
-                inline for (1..4) |i| self.position[i] = .{ 1, i + 2 };
+                self.position = .{ .{ 5, 3 }, .{ 5, 4 }, .{ 5, 5 }, .{ 4, 4 } };
             },
             .Z => {
+                color = .Red;
                 self.orientation = .{ .M3x3 = mShape[6] };
-                inline for (3..5) |i| {
-                    state[0][i] = .Red;
-                    state[1][i + 1] = .Red;
-                }
-                inline for (0..2) |i| self.position[i] = .{ 0, i + 3 };
-                inline for (2..4) |i| self.position[i] = .{ 1, i + 2 };
+                self.position = .{ .{ 4, 3 }, .{ 4, 4 }, .{ 5, 4 }, .{ 5, 5 } };
             },
-            .Empty => {},
+            .Empty => unreachable,
         }
+        while (true) {
+            for (self.position) |p| {
+                if (self.ignore(state, p[0] + 1, p[1])) continue;
+                if (state[p[0]][p[1]] != .Black) {
+                    self.row -= 1;
+                    if (self.row == 2) return true;
+                    break;
+                }
+            } else break;
+            inline for (0..4) |i| self.position[i][0] -= 1;
+        }
+        inline for (self.position) |p| state[p[0]][p[1]] = color;
         self.ghost = self.position;
         self.ghostDown(state);
         self.now = std.time.milliTimestamp();
+        return false;
     }
     pub fn updateInterval(self: *Logic, level: usize) void {
         if (20 < level) return;

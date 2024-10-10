@@ -42,7 +42,7 @@ pub const Meta = struct {
     level: usize = 1,
     score: usize = 0,
     pub fn init() Meta {
-        const win = c.newwin(8, 12, 17, 0);
+        const win = c.newwin(8, 12, 14, 0);
         _ = c.mvwaddstr(win, 1, 1,
             \\SCORE
             \\ 0
