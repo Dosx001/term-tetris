@@ -28,7 +28,7 @@ pub fn main() !void {
     _ = c.start_color();
     _ = c.use_default_colors();
     _ = c.init_pair(1, 0, c.COLOR_RED);
-    _ = c.init_pair(2, 0, 214);
+    _ = c.init_pair(2, 0, 208);
     _ = c.init_pair(3, 0, c.COLOR_YELLOW);
     _ = c.init_pair(4, 0, c.COLOR_GREEN);
     _ = c.init_pair(5, 0, c.COLOR_CYAN);
