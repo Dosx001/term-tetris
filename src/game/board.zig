@@ -20,8 +20,9 @@ pub const Board = struct {
     color: c_int = 0,
     pub fn init() Board {
         const win =
-            c.newwin(25, 21, 0, 12);
+            c.newwin(26, 21, 0, 12);
         _ = c.waddstr(win,
+            \\  │ │ │ │ │ │ │ │ │
             \\  │ │ │ │ │ │ │ │ │
             \\  │ │ │ │ │ │ │ │ │
             \\  │ │ │ │ │ │ │ │ │
@@ -67,7 +68,7 @@ pub const Board = struct {
         }
     }
     pub fn draw(self: *Board, state: *[24][10]Color) void {
-        for (0..23) |y| {
+        for (0..24) |y| {
             for (0..10) |x| {
                 const color = switch (state[y][x]) {
                     .Red => c.COLOR_PAIR(1),

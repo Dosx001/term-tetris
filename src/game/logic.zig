@@ -130,19 +130,11 @@ pub const Logic = struct {
     }
     pub fn down(self: *Logic, state: *[24][10]Color) bool {
         for (self.position) |p| {
-            if (22 == p[0]) return true;
+            if (23 == p[0]) return true;
             if (self.ignore(state, p[0] + 1, p[1])) continue;
             if (state[p[0] + 1][p[1]] != .Black) return true;
         }
-        switch (self.orientation) {
-            .M4x4 => {
-                if (self.row != 19) self.row += 1;
-            },
-            .M3x3 => {
-                if (self.row != 20) self.row += 1;
-            },
-            .M2x2 => {},
-        }
+        self.row += 1;
         const color = state[self.position[0][0]][self.position[0][1]];
         self.delete(state);
         inline for (0..4) |i| {
@@ -165,7 +157,7 @@ pub const Logic = struct {
         var check = true;
         while (check) {
             for (self.ghost) |p| {
-                if (21 < p[0]) {
+                if (22 < p[0]) {
                     check = false;
                     break;
                 }
@@ -186,6 +178,7 @@ pub const Logic = struct {
     }
     fn checkRotation(self: *Logic, state: *[24][10]Color, position: *[4][2]usize) bool {
         for (position) |p| {
+            if (24 == p[0]) break;
             if (self.ignore(state, p[0], p[1])) continue;
             if (state[p[0]][p[1]] != .Black) break;
         } else return false;
@@ -198,11 +191,9 @@ pub const Logic = struct {
             };
             inline for (0..4) |i| position[i][0] -= offset;
             for (position) |p| {
+                if (24 == p[0]) return true;
                 if (self.ignore(state, p[0], p[1])) continue;
-                if (state[p[0]][p[1]] != .Black) {
-                    self.row -= offset;
-                    return true;
-                }
+                if (state[p[0]][p[1]] != .Black) return true;
             } else return false;
         }
         return true;
