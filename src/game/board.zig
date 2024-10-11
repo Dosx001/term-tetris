@@ -80,17 +80,7 @@ pub const Board = struct {
                 };
                 _ = c.wattron(self.win, color);
                 const cx = 2 * @as(c_int, @intCast(x)) + 1;
-                switch (state[y][x]) {
-                    .Cyan => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Blue => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Orange => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Yellow => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Green => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Magenta => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Red => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Black => _ = c.mvwaddstr(self.win, cy, cx, " "),
-                    .Ghost => _ = c.mvwaddstr(self.win, cy, cx, "▪"),
-                }
+                _ = c.mvwaddstr(self.win, cy, cx, if (state[y][x] == .Ghost) "▪" else " ");
                 _ = c.wattroff(self.win, color);
             }
         }
