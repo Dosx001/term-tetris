@@ -147,13 +147,8 @@ fn play() Display {
                         logic.delete(&state);
                         logic.deleteGhost(&state);
                         shape = hold.capture(shape);
-                        if (shape == .Empty) {
-                            shape = next.draw(bag.grab());
-                        }
-                        if (logic.insert(shape, &state)) {
-                            gameloop = .Lost;
-                            break;
-                        }
+                        if (shape == .Empty) shape = next.draw(bag.grab());
+                        if (logic.insert(shape, &state)) gameloop = .Lost;
                         board.colorGhost(shape);
                     }
                 },
