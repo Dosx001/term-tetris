@@ -1,3 +1,4 @@
+const std = @import("std");
 const Shape = @import("bag.zig").Shape;
 const c = @cImport({
     @cInclude("ncurses.h");
@@ -85,5 +86,20 @@ pub const Board = struct {
             }
         }
         _ = c.wrefresh(self.win);
+    }
+    pub fn animate(self: *Board, state: *[24][10]Color) void {
+        inline for (0..3) |_| {
+            inline for (1..21) |y| {
+                const cy: c_int = @intCast(y);
+                inline for (0..10) |x| {
+                    const cx = 2 * @as(c_int, @intCast(x)) + 1;
+                    _ = c.mvwaddstr(self.win, cy, cx, " ");
+                }
+            }
+            _ = c.wrefresh(self.win);
+            std.time.sleep(200_000_000);
+            self.draw(state);
+            std.time.sleep(200_000_000);
+        }
     }
 };

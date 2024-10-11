@@ -110,6 +110,7 @@ fn play() Display {
     var hold = Hold.Hold.init();
     var meta = Meta.Meta.init();
     var next = Next.Next.init(&bag);
+    var display = Display.start;
     var allow = true;
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
@@ -156,6 +157,10 @@ fn play() Display {
                         board.colorGhost(shape);
                     }
                 },
+                114 => {
+                    display = Display.play;
+                    gameloop = .Exit;
+                },
                 122 => logic.rotate(&state, false),
                 else => {},
             }
@@ -166,16 +171,16 @@ fn play() Display {
             board.draw(&state);
         }
     }
+    _ = c.nodelay(c.stdscr, false);
     if (gameloop == .Lost) {
-        while (c.getch() != 27) {}
-        return Display.start;
+        board.animate(&state);
+        if (c.getch() == 114) display = Display.play;
     }
     board.deinit();
     hold.deinit();
     meta.deinit();
     next.deinit();
-    _ = c.nodelay(c.stdscr, false);
-    return Display.start;
+    return display;
 }
 
 fn help() Display {
