@@ -18,6 +18,8 @@ const Display = enum {
     start,
 };
 
+const GameLoop = enum { Exit, Lost, Playing };
+
 pub fn main() !void {
     c.ESCDELAY = 0;
     _ = c.setlocale(c.LC_ALL, "C.utf8");
@@ -112,13 +114,14 @@ fn play() Display {
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
+    var gameloop: GameLoop = .Playing;
     var logic = Logic.Logic.init();
-    while (input != 27) {
+    while (gameloop == .Playing) {
         if (shape == .Empty) {
             allow = true;
             if (meta.refresh(&state)) logic.updateInterval(meta.level);
             shape = next.draw(bag.grab());
-            if (logic.insert(shape, &state)) break;
+            if (logic.insert(shape, &state)) gameloop = .Lost;
             board.colorGhost(shape);
             board.draw(&state);
         }
@@ -132,6 +135,7 @@ fn play() Display {
                     if (logic.down(&state)) shape = .Empty;
                     meta.updateScore(1);
                 },
+                27 => gameloop = .Exit,
                 32 => {
                     meta.updateScore(logic.harddrop(&state));
                     shape = .Empty;
@@ -145,7 +149,10 @@ fn play() Display {
                         if (shape == .Empty) {
                             shape = next.draw(bag.grab());
                         }
-                        if (logic.insert(shape, &state)) break;
+                        if (logic.insert(shape, &state)) {
+                            gameloop = .Lost;
+                            break;
+                        }
                         board.colorGhost(shape);
                     }
                 },
@@ -159,12 +166,15 @@ fn play() Display {
             board.draw(&state);
         }
     }
+    if (gameloop == .Lost) {
+        while (c.getch() != 27) {}
+        return Display.start;
+    }
     board.deinit();
     hold.deinit();
     meta.deinit();
     next.deinit();
     _ = c.nodelay(c.stdscr, false);
-    while (c.getch() != 27) {}
     return Display.start;
 }
 
