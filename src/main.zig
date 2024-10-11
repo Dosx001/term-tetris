@@ -157,6 +157,13 @@ fn play() Display {
                         board.colorGhost(shape);
                     }
                 },
+                112 => {
+                    _ = c.nodelay(c.stdscr, false);
+                    while (c.getch() != 112) {}
+                    board.animate(&state);
+                    _ = c.nodelay(c.stdscr, true);
+                    logic.now = std.time.milliTimestamp();
+                },
                 114 => {
                     display = Display.play;
                     gameloop = .Exit;
