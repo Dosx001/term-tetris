@@ -64,8 +64,9 @@ pub const Board = struct {
         }
     }
     pub fn draw(self: *Board, state: *[24][10]Color) void {
-        for (4..24) |y| {
-            for (0..10) |x| {
+        inline for (4..24) |y| {
+            const cy = @as(c_int, @intCast(y)) - 3;
+            inline for (0..10) |x| {
                 const color = switch (state[y][x]) {
                     .Red => c.COLOR_PAIR(1),
                     .Orange => c.COLOR_PAIR(2),
@@ -79,7 +80,6 @@ pub const Board = struct {
                 };
                 _ = c.wattron(self.win, color);
                 const cx = 2 * @as(c_int, @intCast(x)) + 1;
-                const cy = @as(c_int, @intCast(y)) - 3;
                 switch (state[y][x]) {
                     .Cyan => _ = c.mvwaddstr(self.win, cy, cx, " "),
                     .Blue => _ = c.mvwaddstr(self.win, cy, cx, " "),
