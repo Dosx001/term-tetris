@@ -298,17 +298,16 @@ pub const Logic = struct {
             },
             .Empty => unreachable,
         }
-        while (true) {
+        inline for (0..2) |_| {
             for (self.position) |p| {
                 if (self.ignore(state, p[0] + 1, p[1])) continue;
                 if (state[p[0]][p[1]] != .Black) {
                     self.row -= 1;
-                    if (self.row == 2) return true;
                     break;
                 }
             } else break;
             inline for (0..4) |i| self.position[i][0] -= 1;
-        }
+        } else return true;
         inline for (self.position) |p| state[p[0]][p[1]] = color;
         self.ghost = self.position;
         self.ghostDown(state);
