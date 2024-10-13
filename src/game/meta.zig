@@ -75,4 +75,17 @@ pub const Meta = struct {
         _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
         _ = c.wrefresh(self.win);
     }
+    pub fn checkSpin(self: *Meta, spin: *Spin) void {
+        switch (spin.*) {
+            .Full => self.score += 400 * self.level,
+            .Mini => self.score += 100 * self.level,
+            else => {
+                spin.* = .None;
+                return;
+            },
+        }
+        spin.* = .None;
+        _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
+        _ = c.wrefresh(self.win);
+    }
 };

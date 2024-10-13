@@ -129,6 +129,7 @@ fn play() Display {
             board.colorGhost(shape);
             board.draw(&state);
         }
+        meta.checkSpin(&spin);
         input = c.getch();
         if (input != c.ERR) {
             switch (input) {
