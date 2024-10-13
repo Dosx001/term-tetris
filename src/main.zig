@@ -20,6 +20,8 @@ const Display = enum {
 
 const GameLoop = enum { Exit, Lost, Playing };
 
+pub const Spin = enum { None, Normal, Mini, Full };
+
 pub fn main() !void {
     c.ESCDELAY = 0;
     _ = c.setlocale(c.LC_ALL, "C.utf8");
@@ -115,6 +117,7 @@ fn play() Display {
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
+    var spin: Spin = .None;
     var gameloop: GameLoop = .Playing;
     var logic = Logic.Logic.init();
     while (gameloop == .Playing) {
@@ -131,7 +134,7 @@ fn play() Display {
             switch (input) {
                 c.KEY_LEFT => logic.left(&state),
                 c.KEY_RIGHT => logic.right(&state),
-                c.KEY_UP => logic.rotate(&state, true),
+                c.KEY_UP => spin = logic.rotate(&state, shape, true),
                 c.KEY_DOWN => {
                     if (logic.down(&state)) shape = .Empty;
                     meta.updateScore(1);
@@ -163,7 +166,7 @@ fn play() Display {
                     display = Display.play;
                     gameloop = .Exit;
                 },
-                122 => logic.rotate(&state, false),
+                122 => spin = logic.rotate(&state, shape, false),
                 else => {},
             }
             board.draw(&state);

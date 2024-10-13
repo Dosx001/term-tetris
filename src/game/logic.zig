@@ -1,4 +1,5 @@
 const std = @import("std");
+const Spin = @import("root").Spin;
 const Shape = @import("bag.zig").Shape;
 const Color = @import("board.zig").Color;
 const c = @cImport({
@@ -199,7 +200,8 @@ pub const Logic = struct {
         }
         return true;
     }
-    pub fn rotate(self: *Logic, state: *[24][10]Color, clockwise: bool) void {
+    pub fn rotate(self: *Logic, state: *[24][10]Color, shape: Shape, clockwise: bool) Spin {
+        var spin: Spin = .None;
         var position: [4][2]usize = undefined;
         switch (self.orientation) {
             .M4x4 => |m| {
@@ -220,7 +222,7 @@ pub const Logic = struct {
                         idx += 1;
                     }
                 }
-                if (self.checkRotation(state, &position)) return;
+                if (self.checkRotation(state, &position)) return .None;
                 self.orientation = Matrix{ .M4x4 = tmp };
             },
             .M3x3 => |m| {
@@ -241,10 +243,41 @@ pub const Logic = struct {
                         idx += 1;
                     }
                 }
-                if (self.checkRotation(state, &position)) return;
+                if (shape != .T) {
+                    if (self.checkRotation(state, &position)) return .None;
+                } else {
+                    var kick = false;
+                    var pos_copy: [4][2]usize = undefined;
+                    if (self.kick) {
+                        kick = true;
+                        self.kick = false;
+                        std.mem.copyForwards([2]usize, &pos_copy, &position);
+                    }
+                    if (self.checkRotation(state, &position)) {
+                        inline for (0..4) |i| {
+                            if (clockwise) {
+                                position[i][1] -= 1;
+                            } else position[i][1] += 1;
+                            position[i][0] += 2;
+                        }
+                        if (self.checkRotation(state, &position)) {
+                            inline for (0..4) |i| position[i][0] -= 2;
+                            if (!self.checkRotation(state, &position)) spin = .Mini;
+                        } else spin = .Full;
+                    } else spin = .Normal;
+                    if (kick) {
+                        self.kick = true;
+                        if (spin == .None) {
+                            if (self.checkRotation(state, &pos_copy)) return .None;
+                            spin = .Normal;
+                            position = pos_copy;
+                        }
+                    }
+                    if (spin == .None) return .None;
+                }
                 self.orientation = Matrix{ .M3x3 = tmp };
             },
-            .M2x2 => return,
+            .M2x2 => return .None,
         }
         const color = state[self.position[0][0]][self.position[0][1]];
         self.delete(state);
@@ -254,6 +287,7 @@ pub const Logic = struct {
             state[self.position[i][0]][self.position[i][1]] = color;
         }
         self.updateGhost(state);
+        return spin;
     }
     pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) bool {
         self.kick = true;

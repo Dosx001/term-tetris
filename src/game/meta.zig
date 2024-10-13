@@ -1,5 +1,6 @@
 const std = @import("std");
 const Color = @import("board.zig").Color;
+const Spin = @import("root").Spin;
 const c = @cImport({
     @cInclude("ncurses.h");
 });
