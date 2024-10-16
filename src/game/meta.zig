@@ -27,7 +27,7 @@ pub const Meta = struct {
     pub fn deinit(self: *Meta) void {
         _ = c.delwin(self.win);
     }
-    pub fn refresh(self: *Meta, state: *[24][10]Color) bool {
+    pub fn refresh(self: *Meta, state: *[24][10]Color, spin: *Spin) bool {
         var start: usize = 24;
         var count: usize = 0;
         var row: i8 = 23;
@@ -43,13 +43,27 @@ pub const Meta = struct {
         if (start == 24) return false;
         self.lines += count;
         _ = c.mvwprintw(self.win, 6, 1, "%i", self.lines);
-        switch (count) {
-            1 => self.score += 40 * (self.level + 1),
-            2 => self.score += 100 * (self.level + 1),
-            3 => self.score += 300 * (self.level + 1),
-            4 => self.score += 1200 * (self.level + 1),
-            else => {},
+        switch (spin.*) {
+            .Full => switch (count) {
+                1 => self.score += 800 * self.level,
+                2 => self.score += 1200 * self.level,
+                3 => self.score += 1600 * self.level,
+                else => {},
+            },
+            .Mini => switch (count) {
+                1 => self.score += 200 * self.level,
+                2 => self.score += 400 * self.level,
+                else => {},
+            },
+            else => switch (count) {
+                1 => self.score += 40 * (self.level + 1),
+                2 => self.score += 100 * (self.level + 1),
+                3 => self.score += 300 * (self.level + 1),
+                4 => self.score += 1200 * (self.level + 1),
+                else => {},
+            },
         }
+        spin.* = .None;
         _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
         count -= 1;
         for (start - count..start + 1) |i| {

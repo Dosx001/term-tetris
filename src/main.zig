@@ -123,7 +123,7 @@ fn play() Display {
     while (gameloop == .Playing) {
         if (shape == .Empty) {
             allow = true;
-            if (meta.refresh(&state)) logic.updateInterval(meta.level);
+            if (meta.refresh(&state, &spin)) logic.updateInterval(meta.level);
             shape = next.draw(bag.grab());
             if (logic.insert(shape, &state)) gameloop = .Lost;
             board.colorGhost(shape);
