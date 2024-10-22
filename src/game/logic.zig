@@ -348,7 +348,6 @@ pub const Logic = struct {
         }
         inline for (0..2) |_| {
             for (self.position) |p| {
-                if (self.ignore(state, p[0] + 1, p[1])) continue;
                 if (state[p[0]][p[1]] != .Black) {
                     self.row -= 1;
                     break;
