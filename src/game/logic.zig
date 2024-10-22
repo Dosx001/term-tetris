@@ -59,6 +59,7 @@ pub const Logic = struct {
     col: usize = 0,
     row: usize = 4,
     kick: bool = true,
+    delay: bool = false,
     pub fn init() Logic {
         return .{
             .now = std.time.milliTimestamp(),
@@ -67,7 +68,12 @@ pub const Logic = struct {
     pub fn update(self: *Logic) bool {
         const time = std.time.milliTimestamp();
         const diff: i64 = time - self.now;
-        if (self.interval <= diff) {
+        if (self.delay and self.interval <= 500) {
+            if (500 <= diff) {
+                self.now = time;
+                return true;
+            }
+        } else if (self.interval <= diff) {
             self.now = time;
             return true;
         }
@@ -82,6 +88,9 @@ pub const Logic = struct {
             if (state[p[0]][p[1]] == .Ghost)
                 state[p[0]][p[1]] = .Black;
         }
+    }
+    fn setDelay(self: *Logic) void {
+        self.delay = self.position[0][0] == self.ghost[0][0];
     }
     fn ignore(self: *Logic, state: *[24][10]Color, y: usize, x: usize) bool {
         if (state[y][x] == .Ghost) return true;
@@ -103,6 +112,7 @@ pub const Logic = struct {
             state[self.position[i][0]][self.position[i][1]] = color;
         }
         self.updateGhost(state);
+        self.setDelay();
     }
     pub fn right(self: *Logic, state: *[24][10]Color) void {
         for (self.position) |p| {
@@ -128,6 +138,7 @@ pub const Logic = struct {
             state[self.position[i][0]][self.position[i][1]] = color;
         }
         self.updateGhost(state);
+        self.setDelay();
     }
     pub fn down(self: *Logic, state: *[24][10]Color) bool {
         for (self.position) |p| {
@@ -142,6 +153,7 @@ pub const Logic = struct {
             self.position[i][0] += 1;
             state[self.position[i][0]][self.position[i][1]] = color;
         }
+        self.setDelay();
         self.now = std.time.milliTimestamp();
         return false;
     }
@@ -287,10 +299,12 @@ pub const Logic = struct {
             state[self.position[i][0]][self.position[i][1]] = color;
         }
         self.updateGhost(state);
+        self.setDelay();
         return spin;
     }
     pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) bool {
         self.kick = true;
+        self.delay = false;
         self.row = 4;
         self.col = if (shape == .O) 4 else 3;
         var color: Color = undefined;
