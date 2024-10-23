@@ -7,9 +7,9 @@ const c = @cImport({
 
 pub const Meta = struct {
     win: ?*c.WINDOW,
-    lines: usize = 0,
-    level: usize = 1,
-    score: usize = 0,
+    lines: u16 = 0,
+    level: u16 = 1,
+    score: u64 = 0,
     pub fn init() Meta {
         const win = c.newwin(8, 12, 14, 0);
         _ = c.mvwaddstr(win, 1, 1,
@@ -30,7 +30,7 @@ pub const Meta = struct {
     pub fn refresh(self: *Meta, state: *[24][10]Color, spin: *Spin) bool {
         var start: usize = 24;
         var count: usize = 0;
-        var row: i8 = 23;
+        var row: i6 = 23;
         while (0 <= row) : (row -= 1) {
             inline for (0..10) |j| {
                 if (state[@intCast(row)][j] == Color.Black) break;
@@ -41,7 +41,7 @@ pub const Meta = struct {
             }
         }
         if (start == 24) return false;
-        self.lines += count;
+        self.lines += @intCast(count);
         _ = c.mvwprintw(self.win, 6, 1, "%i", self.lines);
         switch (spin.*) {
             .Full => switch (count) {
@@ -70,7 +70,7 @@ pub const Meta = struct {
             inline for (0..10) |j| state[i][j] = Color.Black;
         }
         var i: usize = start;
-        var j: i8 = @intCast(start - count - 1);
+        var j: i6 = @intCast(start - count - 1);
         while (0 <= j) : (j -= 1) {
             std.mem.swap([10]Color, &state[i], &state[@intCast(j)]);
             i -= 1;
