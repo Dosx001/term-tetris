@@ -10,6 +10,7 @@ pub const Meta = struct {
     lines: u16 = 0,
     level: u16 = 1,
     score: u64 = 0,
+    combo: i7 = -1,
     pub fn init() Meta {
         const win = c.newwin(8, 12, 14, 0);
         _ = c.mvwaddstr(win, 1, 1,
@@ -64,6 +65,10 @@ pub const Meta = struct {
             },
         }
         spin.* = .None;
+        if (count != 0) {
+            self.combo += 1;
+            self.score += 50 * @as(u16, @intCast(self.combo)) * self.level;
+        } else self.combo = -1;
         _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
         count -= 1;
         for (start - count..start + 1) |i| {
