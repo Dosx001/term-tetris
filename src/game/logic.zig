@@ -52,7 +52,7 @@ const mShape = .{
 
 pub const Logic = struct {
     now: i64,
-    interval: i64 = 1000,
+    interval: i64,
     ghost: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     position: [4][2]usize = .{ .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 }, .{ 0, 0 } },
     orientation: Matrix = undefined,
@@ -60,8 +60,10 @@ pub const Logic = struct {
     row: usize = 4,
     kick: bool = true,
     delay: bool = false,
-    pub fn init() Logic {
+    pub fn init(level: u16) Logic {
+        const diff: f64 = @floatFromInt(level - 1);
         return .{
+            .interval = @intFromFloat(std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000),
             .now = std.time.milliTimestamp(),
         };
     }
@@ -361,7 +363,7 @@ pub const Logic = struct {
         self.now = std.time.milliTimestamp();
         return false;
     }
-    pub fn updateInterval(self: *Logic, level: usize) void {
+    pub fn updateInterval(self: *Logic, level: u16) void {
         if (20 < level) return;
         const diff: f64 = @floatFromInt(level - 1);
         self.interval = @intFromFloat(std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000);

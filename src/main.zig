@@ -12,10 +12,11 @@ const c = @cImport({
 });
 
 const Display = enum {
-    exit,
-    help,
-    play,
-    start,
+    Exit,
+    Help,
+    Play,
+    PlayMenu,
+    Start,
 };
 
 const GameLoop = enum { Exit, Lost, Playing };
@@ -38,13 +39,15 @@ pub fn main() !void {
     _ = c.init_pair(5, 0, c.COLOR_CYAN);
     _ = c.init_pair(6, 0, c.COLOR_BLUE);
     _ = c.init_pair(7, 0, c.COLOR_MAGENTA);
-    var state = Display.start;
+    var level: u16 = 1;
+    var state = Display.Start;
     while (true) {
         state = switch (state) {
-            Display.help => help(),
-            Display.play => play(),
-            Display.exit => break,
-            Display.start => start(),
+            Display.Exit => break,
+            Display.Help => help(),
+            Display.PlayMenu => play_menu(&level),
+            Display.Play => play(level),
+            Display.Start => start(),
         };
         _ = c.clear();
     }
@@ -70,7 +73,7 @@ fn start() Display {
     var items: []?*c.ITEM = undefined;
     if (std.heap.page_allocator.alloc(?*c.ITEM, choices.len)) |new_items| {
         items = new_items;
-    } else |_| return Display.exit;
+    } else |_| return Display.Exit;
     defer std.heap.page_allocator.free(items);
     inline for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
@@ -86,9 +89,9 @@ fn start() Display {
         switch (input) {
             10 => {
                 switch (c.item_index(c.current_item(menu).?)) {
-                    0 => return Display.play,
-                    1 => return Display.help,
-                    2 => return Display.exit,
+                    0 => return Display.PlayMenu,
+                    1 => return Display.Help,
+                    2 => return Display.Exit,
                     else => {},
                 }
             },
@@ -104,22 +107,45 @@ fn start() Display {
     return state;
 }
 
-fn play() Display {
+fn play_menu(level: *u16) Display {
+    _ = c.mvaddstr(13, 0,
+        \\         Press Enter to start
+        \\         Press j/k to -/+1 level
+        \\               Level:
+    );
+    _ = c.mvprintw(15, 22, "%i ", level.*);
+    while (true) {
+        switch (c.getch()) {
+            10 => return Display.Play,
+            27, 113 => return Display.Start,
+            106 => {
+                if (1 < level.*) level.* -= 1;
+            },
+            107 => {
+                if (level.* < 20) level.* += 1;
+            },
+            else => continue,
+        }
+        _ = c.mvprintw(15, 22, "%i ", level.*);
+    }
+}
+
+fn play(level: u16) Display {
     _ = c.nodelay(c.stdscr, true);
     _ = c.refresh();
     var bag = Bag.Bag.init();
     var board = Board.Board.init();
     var hold = Hold.Hold.init();
-    var meta = Meta.Meta.init();
+    var meta = Meta.Meta.init(level);
     var next = Next.Next.init(&bag);
-    var display = Display.start;
+    var display = Display.Start;
     var allow = true;
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
     var spin: Spin = .None;
     var gameloop: GameLoop = .Playing;
-    var logic = Logic.Logic.init();
+    var logic = Logic.Logic.init(level);
     while (gameloop == .Playing) {
         if (shape == .Empty) {
             allow = true;
@@ -140,7 +166,7 @@ fn play() Display {
                     if (logic.down(&state)) shape = .Empty;
                     meta.updateScore(1);
                 },
-                27 => gameloop = .Exit,
+                27, 113 => gameloop = .Exit,
                 32 => {
                     meta.updateScore(logic.harddrop(&state));
                     shape = .Empty;
@@ -164,7 +190,7 @@ fn play() Display {
                     logic.now = std.time.milliTimestamp();
                 },
                 114 => {
-                    display = Display.play;
+                    display = Display.Play;
                     gameloop = .Exit;
                 },
                 122 => spin = logic.rotate(&state, shape, false),
@@ -180,7 +206,7 @@ fn play() Display {
     _ = c.nodelay(c.stdscr, false);
     if (gameloop == .Lost) {
         board.animate(&state);
-        if (c.getch() == 114) display = Display.play;
+        if (c.getch() == 114) display = Display.Play;
     }
     board.deinit();
     hold.deinit();
@@ -209,5 +235,5 @@ fn help() Display {
         \\p: Pause
     );
     while (c.getch() != 27) {}
-    return Display.start;
+    return Display.Start;
 }

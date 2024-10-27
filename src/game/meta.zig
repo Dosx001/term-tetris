@@ -7,23 +7,24 @@ const c = @cImport({
 
 pub const Meta = struct {
     win: ?*c.WINDOW,
+    level: u16,
     lines: u16 = 0,
-    level: u16 = 1,
     score: u64 = 0,
     combo: i7 = -1,
-    pub fn init() Meta {
+    pub fn init(level: u16) Meta {
         const win = c.newwin(8, 12, 14, 0);
         _ = c.mvwaddstr(win, 1, 1,
             \\SCORE
             \\ 0
             \\ LEVEL
-            \\ 1
+            \\
             \\ LINES
             \\ 0
         );
+        _ = c.mvwprintw(win, 4, 1, "%i", level);
         _ = c.box(win, 0, 0);
         _ = c.wrefresh(win);
-        return Meta{ .win = win };
+        return Meta{ .win = win, .level = level };
     }
     pub fn deinit(self: *Meta) void {
         _ = c.delwin(self.win);
