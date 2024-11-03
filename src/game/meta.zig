@@ -29,13 +29,18 @@ pub const Meta = struct {
     pub fn deinit(self: *Meta) void {
         _ = c.delwin(self.win);
     }
-    pub fn refresh(self: *Meta, state: *[24][10]Color, spin: *Spin) bool {
+    pub fn refresh(
+        self: *Meta,
+        state: *[24][10]Color,
+        spin: *Spin,
+    ) bool {
         var start: usize = 24;
         var count: usize = 0;
         var row: i6 = 23;
         while (0 <= row) : (row -= 1) {
             inline for (0..10) |j| {
-                if (state[@intCast(row)][j] == Color.Black) break;
+                if (state[@intCast(row)][j] == Color.Black)
+                    break;
             } else {
                 if (start == 24) start = @intCast(row);
                 count += 1;
@@ -73,12 +78,17 @@ pub const Meta = struct {
         _ = c.mvwprintw(self.win, 2, 1, "%i", self.score);
         count -= 1;
         for (start - count..start + 1) |i| {
-            inline for (0..10) |j| state[i][j] = Color.Black;
+            inline for (0..10) |j|
+                state[i][j] = Color.Black;
         }
         var i: usize = start;
         var j: i6 = @intCast(start - count - 1);
         while (0 <= j) : (j -= 1) {
-            std.mem.swap([10]Color, &state[i], &state[@intCast(j)]);
+            std.mem.swap(
+                [10]Color,
+                &state[i],
+                &state[@intCast(j)],
+            );
             i -= 1;
         }
         if (self.level - 1 < @divTrunc(self.lines, 10)) {

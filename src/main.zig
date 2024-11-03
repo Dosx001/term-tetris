@@ -75,7 +75,8 @@ fn start() Display {
         items = new_items;
     } else |_| return Display.Exit;
     defer std.heap.page_allocator.free(items);
-    inline for (choices, 0..) |choice, i| items[i] = c.new_item(choice, null).?;
+    inline for (choices, 0..) |choice, i|
+        items[i] = c.new_item(choice, null).?;
     const menu = c.new_menu(items.ptr);
     const win = c.newwin(choices.len + 2, 8, 12, 19);
     _ = c.set_menu_win(menu, win);
@@ -169,16 +170,20 @@ fn play() Display {
     var allow = true;
     var input: c_int = undefined;
     var shape: Bag.Shape = .Empty;
-    var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
+    var state: [24][10]Board.Color = [_][10]Board.Color{
+        [_]Board.Color{Board.Color.Black} ** 10,
+    } ** 24;
     var spin: Spin = .None;
     var gameloop: GameLoop = .Playing;
     var logic = Logic.Logic.init(storage.level);
     while (gameloop == .Playing) {
         if (shape == .Empty) {
             allow = true;
-            if (meta.refresh(&state, &spin)) logic.updateInterval(meta.level);
+            if (meta.refresh(&state, &spin))
+                logic.updateInterval(meta.level);
             shape = next.draw(bag.grab());
-            if (logic.insert(shape, &state)) gameloop = .Lost;
+            if (logic.insert(shape, &state))
+                gameloop = .Lost;
             board.colorGhost(shape);
             board.draw(&state);
         }
@@ -204,8 +209,12 @@ fn play() Display {
                         logic.delete(&state);
                         logic.deleteGhost(&state);
                         shape = hold.capture(shape);
-                        if (shape == .Empty) shape = next.draw(bag.grab());
-                        if (logic.insert(shape, &state)) gameloop = .Lost;
+                        if (shape == .Empty)
+                            shape = next.draw(bag.grab());
+                        if (logic.insert(
+                            shape,
+                            &state,
+                        )) gameloop = .Lost;
                         board.colorGhost(shape);
                     }
                 },

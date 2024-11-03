@@ -63,7 +63,9 @@ pub const Logic = struct {
     pub fn init(level: u16) Logic {
         const diff: f64 = @floatFromInt(level - 1);
         return .{
-            .interval = @intFromFloat(std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000),
+            .interval = @intFromFloat(
+                std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000,
+            ),
             .now = std.time.milliTimestamp(),
         };
     }
@@ -83,7 +85,8 @@ pub const Logic = struct {
         return false;
     }
     pub fn delete(self: *Logic, state: *[24][10]Color) void {
-        inline for (0..4) |i| state[self.position[i][0]][self.position[i][1]] = .Black;
+        inline for (0..4) |i|
+            state[self.position[i][0]][self.position[i][1]] = .Black;
     }
     pub fn deleteGhost(self: *Logic, state: *[24][10]Color) void {
         inline for (self.ghost) |p| {
@@ -96,7 +99,8 @@ pub const Logic = struct {
     }
     fn ignore(self: *Logic, state: *[24][10]Color, y: usize, x: usize) bool {
         if (state[y][x] == .Ghost) return true;
-        inline for (self.position) |p| if (p[0] == y and p[1] == x) return true;
+        inline for (self.position) |p|
+            if (p[0] == y and p[1] == x) return true;
         return false;
     }
     pub fn left(self: *Logic, state: *[24][10]Color) void {
@@ -192,7 +196,11 @@ pub const Logic = struct {
                 state[p[0]][p[1]] = .Ghost;
         }
     }
-    fn checkRotation(self: *Logic, state: *[24][10]Color, position: *[4][2]usize) bool {
+    fn checkRotation(
+        self: *Logic,
+        state: *[24][10]Color,
+        position: *[4][2]usize,
+    ) bool {
         for (position) |p| {
             if (24 == p[0]) break;
             if (self.ignore(state, p[0], p[1])) continue;
@@ -214,7 +222,12 @@ pub const Logic = struct {
         }
         return true;
     }
-    pub fn rotate(self: *Logic, state: *[24][10]Color, shape: Shape, clockwise: bool) Spin {
+    pub fn rotate(
+        self: *Logic,
+        state: *[24][10]Color,
+        shape: Shape,
+        clockwise: bool,
+    ) Spin {
         var spin: Spin = .None;
         var position: [4][2]usize = undefined;
         switch (self.orientation) {
@@ -304,7 +317,11 @@ pub const Logic = struct {
         self.setDelay();
         return spin;
     }
-    pub fn insert(self: *Logic, shape: Shape, state: *[24][10]Color) bool {
+    pub fn insert(
+        self: *Logic,
+        shape: Shape,
+        state: *[24][10]Color,
+    ) bool {
         self.kick = true;
         self.delay = false;
         self.row = 4;
@@ -366,6 +383,10 @@ pub const Logic = struct {
     pub fn updateInterval(self: *Logic, level: u16) void {
         if (20 < level) return;
         const diff: f64 = @floatFromInt(level - 1);
-        self.interval = @intFromFloat(std.math.pow(f64, 0.8 - (diff * 0.007), diff) * 1000);
+        self.interval = @intFromFloat(std.math.pow(
+            f64,
+            0.8 - (diff * 0.007),
+            diff,
+        ) * 1000);
     }
 };

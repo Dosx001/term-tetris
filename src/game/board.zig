@@ -81,7 +81,12 @@ pub const Board = struct {
                 };
                 _ = c.wattron(self.win, color);
                 const cx = 2 * @as(c_int, @intCast(x)) + 1;
-                _ = c.mvwaddstr(self.win, cy, cx, if (state[y][x] == .Ghost) "▪" else " ");
+                _ = c.mvwaddstr(
+                    self.win,
+                    cy,
+                    cx,
+                    if (state[y][x] == .Ghost) "▪" else " ",
+                );
                 _ = c.wattroff(self.win, color);
             }
         }

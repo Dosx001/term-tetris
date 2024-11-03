@@ -6,13 +6,20 @@ const c = @cImport({
 
 pub const Next = struct {
     win: ?*c.WINDOW,
-    shapes: std.fifo.LinearFifo(Bag.Shape, .{ .Static = 3 }) = std.fifo.LinearFifo(Bag.Shape, .{ .Static = 3 }).init(),
+    shapes: std.fifo.LinearFifo(
+        Bag.Shape,
+        .{ .Static = 3 },
+    ) = std.fifo.LinearFifo(
+        Bag.Shape,
+        .{ .Static = 3 },
+    ).init(),
     pub fn init(bag: *Bag.Bag) Next {
         const win = c.newwin(11, 12, 0, 34);
         _ = c.mvwaddstr(win, 1, 1, "NEXT");
         _ = c.box(win, 0, 0);
         var next = Next{ .win = win };
-        inline for (0..3) |_| next.shapes.writeItem(bag.grab()) catch unreachable;
+        inline for (0..3) |_|
+            next.shapes.writeItem(bag.grab()) catch unreachable;
         _ = c.wrefresh(win);
         return next;
     }
