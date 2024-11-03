@@ -5,6 +5,7 @@ const Hold = @import("game/hold.zig");
 const Logic = @import("game/logic.zig");
 const Meta = @import("game/meta.zig");
 const Next = @import("game/next.zig");
+const Storage = @import("game/storage.zig");
 const c = @cImport({
     @cInclude("ncurses.h");
     @cInclude("menu.h");
@@ -39,14 +40,13 @@ pub fn main() !void {
     _ = c.init_pair(5, 0, c.COLOR_CYAN);
     _ = c.init_pair(6, 0, c.COLOR_BLUE);
     _ = c.init_pair(7, 0, c.COLOR_MAGENTA);
-    var level: u16 = 1;
     var state = Display.Start;
     while (true) {
         state = switch (state) {
             Display.Exit => break,
             Display.Help => help(),
-            Display.PlayMenu => play_menu(&level),
-            Display.Play => play(level),
+            Display.PlayMenu => play_menu(),
+            Display.Play => play(),
             Display.Start => start(),
         };
         _ = c.clear();
@@ -107,36 +107,63 @@ fn start() Display {
     return state;
 }
 
-fn play_menu(level: *u16) Display {
-    _ = c.mvaddstr(13, 0,
+fn play_menu() Display {
+    _ = c.refresh();
+    const win = c.newwin(8, 28, 5, 7);
+    _ = c.box(win, 0, 0);
+    _ = c.mvwaddstr(win, 1, 8, "High Scores");
+    var storage = Storage.Storage.init();
+    inline for (0..5) |i|
+        _ = c.mvwprintw(
+            win,
+            @intCast(i + 2),
+            2,
+            "%s %lu",
+            &storage.scores[i].name,
+            storage.scores[i].score,
+        );
+    _ = c.wrefresh(win);
+    _ = c.mvprintw(13, 0,
         \\         Press Enter to start
         \\         Press j/k to -/+1 level
-        \\               Level:
-    );
-    _ = c.mvprintw(15, 22, "%i ", level.*);
+        \\               Level: %i
+    , storage.level);
     while (true) {
         switch (c.getch()) {
-            10 => return Display.Play,
-            27, 113 => return Display.Start,
+            10 => {
+                _ = c.delwin(win);
+                return Display.Play;
+            },
+            27, 113 => {
+                _ = c.delwin(win);
+                return Display.Start;
+            },
             106 => {
-                if (1 < level.*) level.* -= 1;
+                if (1 < storage.level) {
+                    storage.level -= 1;
+                    storage.setStorage(false);
+                }
             },
             107 => {
-                if (level.* < 20) level.* += 1;
+                if (storage.level < 20) {
+                    storage.level += 1;
+                    storage.setStorage(false);
+                }
             },
             else => continue,
         }
-        _ = c.mvprintw(15, 22, "%i ", level.*);
+        _ = c.mvprintw(15, 22, "%i ", storage.level);
     }
 }
 
-fn play(level: u16) Display {
+fn play() Display {
     _ = c.nodelay(c.stdscr, true);
     _ = c.refresh();
     var bag = Bag.Bag.init();
     var board = Board.Board.init();
     var hold = Hold.Hold.init();
-    var meta = Meta.Meta.init(level);
+    var storage = Storage.Storage.init();
+    var meta = Meta.Meta.init(storage.level);
     var next = Next.Next.init(&bag);
     var display = Display.Start;
     var allow = true;
@@ -145,7 +172,7 @@ fn play(level: u16) Display {
     var state: [24][10]Board.Color = [_][10]Board.Color{[_]Board.Color{Board.Color.Black} ** 10} ** 24;
     var spin: Spin = .None;
     var gameloop: GameLoop = .Playing;
-    var logic = Logic.Logic.init(level);
+    var logic = Logic.Logic.init(storage.level);
     while (gameloop == .Playing) {
         if (shape == .Empty) {
             allow = true;
@@ -206,6 +233,10 @@ fn play(level: u16) Display {
     _ = c.nodelay(c.stdscr, false);
     if (gameloop == .Lost) {
         board.animate(&state);
+        if (storage.scores[4].score < meta.score) {
+            storage.scores[4].score = meta.score;
+            storage.setStorage(true);
+        }
         if (c.getch() == 114) display = Display.Play;
     }
     board.deinit();
