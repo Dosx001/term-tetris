@@ -83,12 +83,9 @@ fn start() Display {
     _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
     _ = c.post_menu(menu);
     _ = c.refresh();
-    var input: c_int = undefined;
-    var input: c_int = undefined;
     const state = while (true) {
         _ = c.wrefresh(win);
-        input = c.getch();
-        switch (input) {
+        switch (c.getch()) {
             10 => {
                 switch (c.item_index(c.current_item(menu).?)) {
                     0 => return Display.PlayMenu,
