@@ -70,10 +70,10 @@ fn start() Display {
         \\   ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝╚══════╝
     );
     const choices = &[_][*c]const u8{ "Play", "Help", "Quit" };
-    var items: []?*c.ITEM = undefined;
-    if (std.heap.page_allocator.alloc(?*c.ITEM, choices.len)) |new_items| {
-        items = new_items;
-    } else |_| return Display.Exit;
+    const items = std.heap.page_allocator.alloc(
+        ?*c.ITEM,
+        choices.len,
+    ) catch return Display.Exit;
     defer std.heap.page_allocator.free(items);
     inline for (choices, 0..) |choice, i|
         items[i] = c.new_item(choice, null).?;
@@ -83,6 +83,7 @@ fn start() Display {
     _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
     _ = c.post_menu(menu);
     _ = c.refresh();
+    var input: c_int = undefined;
     var input: c_int = undefined;
     const state = while (true) {
         _ = c.wrefresh(win);
