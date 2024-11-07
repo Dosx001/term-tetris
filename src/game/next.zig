@@ -30,7 +30,7 @@ pub const Next = struct {
         const res = self.shapes.readItem().?;
         self.shapes.writeItem(shape) catch unreachable;
         inline for (0..3) |i| {
-            const y1: c_int = 3 * @as(c_int, @intCast(i)) + 2;
+            const y1: c_int = @intCast(3 * i + 2);
             const y2: c_int = y1 + 1;
             _ = c.mvwaddstr(self.win, y1, 4, "    ");
             _ = c.mvwaddstr(self.win, y2, 4, "   ");
