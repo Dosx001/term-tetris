@@ -25,6 +25,7 @@ pub const Next = struct {
     }
     pub fn deinit(self: *Next) void {
         _ = c.delwin(self.win);
+        self.shapes.deinit();
     }
     pub fn draw(self: *Next, shape: Bag.Shape) Bag.Shape {
         const res = self.shapes.readItem().?;
