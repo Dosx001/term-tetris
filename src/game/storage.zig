@@ -1,8 +1,13 @@
 const std = @import("std");
+const c = @cImport({
+    @cInclude("ncurses.h");
+    @cInclude("form.h");
+});
 
 const Score = struct {
     name: [3]u8 = [3]u8{ 'N', '/', 'A' },
     score: u64 = 0,
+    mark: bool = false,
 };
 
 pub const Storage = struct {
@@ -90,7 +95,80 @@ pub const Storage = struct {
     pub fn setStorage(self: *Storage, score: bool) void {
         const file = self.getFile() orelse return;
         defer file.close();
-        if (score) std.mem.sort(Score, &self.scores, .{}, cmp);
+        if (score) {
+            self.scores[4].mark = true;
+            std.mem.sort(Score, &self.scores, .{}, cmp);
+            const win = c.newwin(8, 28, 5, 9);
+            _ = c.box(win, 0, 0);
+            _ = c.mvwaddstr(win, 1, 8, "High Scores");
+            var fields: [6]?*c.FIELD = .{null} ** 6;
+            var y: usize = 0;
+            inline for (0..5) |i| {
+                fields[i] = c.new_field(1, 3, @intCast(i + 1), 1, 0, 0);
+                if (self.scores[i].mark) {
+                    self.scores[i].mark = false;
+                    y = i;
+                    _ = c.set_field_back(fields[i], c.A_UNDERLINE);
+                    _ = c.field_opts_off(fields[i], c.O_AUTOSKIP);
+                } else _ = c.set_field_buffer(
+                    fields[i],
+                    0,
+                    &self.scores[i].name,
+                );
+                _ = c.mvwprintw(
+                    win,
+                    @intCast(i + 2),
+                    6,
+                    "%lu",
+                    self.scores[i].score,
+                );
+            }
+            const form = c.new_form(&fields);
+            _ = c.set_form_win(form, win);
+            _ = c.set_form_sub(form, c.derwin(win, 6, 4, 1, 1));
+            _ = c.set_current_field(form, fields[y]);
+            _ = c.refresh();
+            _ = c.post_form(form);
+            _ = c.wrefresh(win);
+            _ = c.curs_set(1);
+            var cur: i3 = 0;
+            var input: c_int = undefined;
+            while (true) {
+                input = c.getch();
+                switch (input) {
+                    10 => break,
+                    c.KEY_BACKSPACE => {
+                        if (0 < cur) {
+                            _ = c.form_driver(
+                                form,
+                                if (cur == 3)
+                                    c.REQ_DEL_CHAR
+                                else
+                                    c.REQ_DEL_PREV,
+                            );
+                            cur -= 1;
+                        }
+                    },
+                    33...126 => {
+                        if (cur == 3)
+                            _ = c.form_driver(form, c.REQ_DEL_CHAR);
+                        _ = c.form_driver(form, input);
+                        if (cur < 3) cur += 1;
+                    },
+                    else => {},
+                }
+                _ = c.wrefresh(win);
+            }
+            _ = c.form_driver(form, c.REQ_VALIDATION);
+            const buf = c.field_buffer(fields[y], 0);
+            inline for (0..3) |i|
+                self.scores[y].name[i] = buf[i];
+            _ = c.curs_set(0);
+            _ = c.delwin(win);
+            _ = c.unpost_form(form);
+            _ = c.free_form(form);
+            _ = c.free_field(fields[0]);
+        }
         self.writeStorage(file);
     }
 };
