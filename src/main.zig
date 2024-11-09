@@ -74,36 +74,36 @@ fn start() Display {
         ?*c.ITEM,
         choices.len,
     ) catch return Display.Exit;
-    defer std.heap.page_allocator.free(items);
-    inline for (choices, 0..) |choice, i|
-        items[i] = c.new_item(choice, null).?;
+    inline for (0..choices.len) |i|
+        items[i] = c.new_item(choices[i], null).?;
     const menu = c.new_menu(items.ptr);
     const win = c.newwin(choices.len + 2, 8, 12, 19);
+    defer {
+        _ = c.delwin(win);
+        _ = c.free_menu(menu);
+        _ = c.unpost_menu(menu);
+        for (items) |item| _ = c.free_item(item);
+        std.heap.page_allocator.free(items);
+    }
     _ = c.set_menu_win(menu, win);
     _ = c.set_menu_sub(menu, c.derwin(win, choices.len, 8, 1, 0));
     _ = c.post_menu(menu);
     _ = c.refresh();
-    const state = while (true) {
+    while (true) {
         _ = c.wrefresh(win);
         switch (c.getch()) {
             10 => {
-                switch (c.item_index(c.current_item(menu).?)) {
-                    0 => return Display.PlayMenu,
-                    1 => return Display.Help,
-                    2 => return Display.Exit,
-                    else => {},
-                }
+                return switch (c.item_index(c.current_item(menu).?)) {
+                    0 => Display.PlayMenu,
+                    1 => Display.Help,
+                    else => Display.Exit,
+                };
             },
             106, c.KEY_DOWN => _ = c.menu_driver(menu, c.REQ_DOWN_ITEM),
             107, c.KEY_UP => _ = c.menu_driver(menu, c.REQ_UP_ITEM),
             else => {},
         }
-    };
-    _ = c.unpost_menu(menu);
-    _ = c.free_menu(menu);
-    _ = c.delwin(win);
-    inline for (items) |item| _ = c.free_item(item);
-    return state;
+    }
 }
 
 fn play_menu() Display {
