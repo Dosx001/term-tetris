@@ -34,6 +34,9 @@ pub const Storage = struct {
         storage.getStorage();
         return storage;
     }
+    pub fn deinit(self: *Storage) void {
+        std.heap.page_allocator.free(self.file_path);
+    }
     fn getFile(self: *Storage) ?std.fs.File {
         return std.fs.openFileAbsolute(
             self.file_path,

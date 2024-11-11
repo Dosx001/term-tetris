@@ -112,6 +112,10 @@ fn play_menu() Display {
     _ = c.box(win, 0, 0);
     _ = c.mvwaddstr(win, 1, 8, "High Scores");
     var storage = Storage.Storage.init();
+    defer {
+        _ = c.delwin(win);
+        storage.deinit();
+    }
     inline for (0..5) |i|
         _ = c.mvwprintw(
             win,
@@ -129,14 +133,8 @@ fn play_menu() Display {
     , storage.level);
     while (true) {
         switch (c.getch()) {
-            10 => {
-                _ = c.delwin(win);
-                return Display.Play;
-            },
-            27, 113 => {
-                _ = c.delwin(win);
-                return Display.Start;
-            },
+            10 => return Display.Play,
+            27, 113 => return Display.Start,
             106 => {
                 if (1 < storage.level) {
                     storage.level -= 1;
@@ -250,6 +248,7 @@ fn play() Display {
     hold.deinit();
     meta.deinit();
     next.deinit();
+    storage.deinit();
     return display;
 }
 
