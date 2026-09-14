@@ -46,6 +46,11 @@ pub const Board = struct {
             \\  │ │ │ │ │ │ │ │ │
         );
         _ = c.box(win, 0, 0);
+        var x: c_int = 2;
+        while (x < 20) : (x += 2) {
+            _ = c.mvwaddch(win, 0, x, c.NCURSES_ACS('w'));
+            _ = c.mvwaddch(win, 21, x, c.NCURSES_ACS('v'));
+        }
         _ = c.wrefresh(win);
         return Board{ .win = win };
     }
