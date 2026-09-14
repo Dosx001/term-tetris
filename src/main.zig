@@ -20,6 +20,19 @@ const Display = enum {
     Start,
 };
 
+const Key = enum(c_int) {
+    Enter = 10,
+    Escape = 27,
+    Space = 32,
+    C = 99,
+    J = 106,
+    K = 107,
+    P = 112,
+    Q = 113,
+    R = 114,
+    Z = 122,
+};
+
 const GameLoop = enum { Exit, Lost, Playing };
 
 pub const Spin = enum { None, Normal, Mini, Full };
@@ -92,15 +105,15 @@ fn start() Display {
     while (true) {
         _ = c.wrefresh(win);
         switch (c.getch()) {
-            10 => {
+            @intFromEnum(Key.Enter) => {
                 return switch (c.item_index(c.current_item(menu).?)) {
                     0 => Display.PlayMenu,
                     1 => Display.Help,
                     else => Display.Exit,
                 };
             },
-            106, c.KEY_DOWN => _ = c.menu_driver(menu, c.REQ_DOWN_ITEM),
-            107, c.KEY_UP => _ = c.menu_driver(menu, c.REQ_UP_ITEM),
+            @intFromEnum(Key.J), c.KEY_DOWN => _ = c.menu_driver(menu, c.REQ_DOWN_ITEM),
+            @intFromEnum(Key.K), c.KEY_UP => _ = c.menu_driver(menu, c.REQ_UP_ITEM),
             else => {},
         }
     }
@@ -133,15 +146,15 @@ fn play_menu() Display {
     , storage.level);
     while (true) {
         switch (c.getch()) {
-            10 => return Display.Play,
-            27, 113 => return Display.Start,
-            106 => {
+            @intFromEnum(Key.Enter) => return Display.Play,
+            @intFromEnum(Key.Escape), @intFromEnum(Key.Q) => return Display.Start,
+            @intFromEnum(Key.J) => {
                 if (1 < storage.level) {
                     storage.level -= 1;
                     storage.setStorage(false);
                 }
             },
-            107 => {
+            @intFromEnum(Key.K) => {
                 if (storage.level < 20) {
                     storage.level += 1;
                     storage.setStorage(false);
@@ -194,12 +207,12 @@ fn play() Display {
                     if (logic.down(&state)) shape = .Empty;
                     meta.updateScore(1);
                 },
-                27, 113 => gameloop = .Exit,
-                32 => {
+                @intFromEnum(Key.Escape), @intFromEnum(Key.Q) => gameloop = .Exit,
+                @intFromEnum(Key.Space) => {
                     meta.updateScore(logic.harddrop(&state));
                     shape = .Empty;
                 },
-                99 => {
+                @intFromEnum(Key.C) => {
                     if (allow) {
                         allow = false;
                         logic.delete(&state);
@@ -214,18 +227,18 @@ fn play() Display {
                         board.colorGhost(shape);
                     }
                 },
-                112 => {
+                @intFromEnum(Key.P) => {
                     _ = c.nodelay(c.stdscr, false);
-                    while (c.getch() != 112) {}
+                    while (c.getch() != @intFromEnum(Key.P)) {}
                     board.animate(&state);
                     _ = c.nodelay(c.stdscr, true);
                     logic.now = std.time.milliTimestamp();
                 },
-                114 => {
+                @intFromEnum(Key.R) => {
                     display = Display.Play;
                     gameloop = .Exit;
                 },
-                122 => spin = logic.rotate(&state, shape, false),
+                @intFromEnum(Key.Z) => spin = logic.rotate(&state, shape, false),
                 else => {},
             }
             board.draw(&state);
@@ -242,7 +255,7 @@ fn play() Display {
             storage.scores[4].score = meta.score;
             storage.setStorage(true);
         }
-        if (c.getch() == 114) display = Display.Play;
+        if (c.getch() == @intFromEnum(Key.R)) display = Display.Play;
     }
     board.deinit();
     hold.deinit();
@@ -271,6 +284,6 @@ fn help() Display {
         \\c: Capture shape
         \\p: Pause
     );
-    while (c.getch() != 27) {}
+    while (c.getch() != @intFromEnum(Key.Escape)) {}
     return Display.Start;
 }
